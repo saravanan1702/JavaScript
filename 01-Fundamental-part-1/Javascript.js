@@ -1,5 +1,5 @@
 //external script
-/*
+
 let js = "Amazing";
 // if (js === "Amazing") alert("JavaScript is Fun!");
 //to showing in console tool we use console.log function
@@ -454,7 +454,7 @@ if (day === "monday") {
 } else {
   console.log("not valid day");
 }
-*/
+
 
 //ternory operators
 //it's similar like if/esle statment
