@@ -6,7 +6,7 @@
 
 //ex
 
-/*
+
 //show visible errror in console
 let hasDriversLicense = false;
 const passTest = true;
@@ -736,7 +736,7 @@ while (dice !== 6) {
   dice = Math.trunc(Math.random() * 6) + 1; //again we give condition, that's why we reassgin inside the loop
   if (dice === 6) console.log(`loop is about to end...`);
 }
-*/
+
 
 // CHALLENGE #4
 // Let's improve Steven's tip calculator even more, this time using loops!
