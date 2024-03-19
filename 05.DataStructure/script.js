@@ -180,10 +180,12 @@ console.log(22 && 'Sara'); //sara will print the reason first is true it will ev
 console.log('hello' && 22 && true && null && 'sara'); //null
 
 //practical Example
+//traditional if else statement for evaluate inner values if() condition is true then inside the part will be work 
 //if execute only the condition is true same as use && short circuit use for evaulate
 if (restaurant.orderPizza) {
   restaurant.orderPizza('mushroom', 'redchilli');
 }
+//instead of using if statment we can use && short-circuiting it will evaluate 2nd statement only first statement is true
 restaurant.orderPizza && restaurant.orderPizza('mushroom', 'green chilli');
 */
 /*
