@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no"
+    />
+    <meta name="theme-color" content="#111214" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <title>Gear &amp; Clutch Race</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Rajdhani:wght@500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <div class="app">
+      <!-- Header -->
+      <header class="top">
+        <div class="brand">
+          <p class="eyebrow">Manual transmission</p>
+          <h1>Gear &amp; Clutch</h1>
+        </div>
+        <div class="chips">
+          <div class="chip">
+            <span>Clutch</span>
+            <strong id="chipClutch">Released</strong>
+          </div>
+          <div class="chip">
+            <span>Drive</span>
+            <strong id="chipDrive" class="muted">Neutral</strong>
+          </div>
+          <button class="icon-btn" id="btnMute" aria-label="Toggle sound">
+            <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true">
+              <path d="M4 9h4l5-4v14l-5-4H4z" fill="currentColor" />
+              <path
+                id="muteWaves"
+                d="M16 8.5a5 5 0 0 1 0 7M18.5 6a8.5 8.5 0 0 1 0 12"
+                stroke="currentColor"
+                stroke-width="2"
+                fill="none"
+                stroke-linecap="round"
+              />
+              <path
+                id="muteCross"
+                d="M16 9l5 6M21 9l-5 6"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+              />
+            </svg>
+          </button>
+        </div>
+      </header>
+
+      <!-- Road + dashboard -->
+      <section class="stage card" id="stage">
+        <canvas id="road"></canvas>
+
+        <div class="hud">
+          <div class="hud-row">
+            <div class="stat"><span>Time</span><strong id="hudTime">0.00</strong></div>
+            <div class="stat"><span>Distance</span><strong id="hudDist">0 m</strong></div>
+            <div class="stat">
+              <span>Engine</span>
+              <div class="dmg"><i id="hudDmg"></i></div>
+            </div>
+          </div>
+          <div class="progress">
+            <div class="track"></div>
+            <i class="mk rival" id="mkRival"></i>
+            <i class="mk you" id="mkYou"></i>
+            <i class="flag"></i>
+          </div>
+        </div>
+
+        <div class="dash">
+          <div class="gear-dial" id="gearDial">
+            <span>Gear</span>
+            <b id="dialGear">N</b>
+          </div>
+          <div class="dash-right">
+            <div class="speedo"><b id="hudSpeed">0</b><span>km/h</span></div>
+            <div class="tacho">
+              <div class="tacho-bar"><i id="tachoFill"></i><em></em></div>
+              <div class="tacho-meta">
+                <span id="hudRpm">0 rpm</span>
+                <span class="shift-light" id="shiftLight">SHIFT</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="lights" id="lights" hidden>
+          <i></i><i></i><i></i>
+        </div>
+        <div class="toast" id="toast"></div>
+      </section>
+
+      <!-- Gear knob -->
+      <section class="gearbox card">
+        <header class="card-head">
+          <h2>Gear knob</h2>
+          <small>5-speed + R</small>
+        </header>
+        <div class="plate" id="plate">
+          <i class="screw s1"></i><i class="screw s2"></i><i class="screw s3"></i
+          ><i class="screw s4"></i>
+          <div class="slot v c0"></div>
+          <div class="slot v c1"></div>
+          <div class="slot v c2"></div>
+          <div class="slot h"></div>
+          <span class="lbl" data-g="1">1</span>
+          <span class="lbl" data-g="3">3</span>
+          <span class="lbl" data-g="5">5</span>
+          <span class="lbl" data-g="2">2</span>
+          <span class="lbl" data-g="4">4</span>
+          <span class="lbl rev" data-g="R">R</span>
+          <div class="knob" id="knob">
+            <div class="knob-face">
+              <span>1 3 5</span>
+              <hr />
+              <span>2 4 R</span>
+            </div>
+          </div>
+        </div>
+        <p class="hint" id="gearHint">Drag or tap a gear. Press the clutch first.</p>
+      </section>
+
+      <!-- Pedals -->
+      <section class="pedals card">
+        <div class="pedal-col">
+          <div class="card-head">
+            <h2>Clutch</h2>
+            <small id="clutchPct">0% down</small>
+          </div>
+          <button class="pedal" id="pedalClutch" aria-label="Clutch pedal (hold)">
+            <span class="arm"><i></i></span>
+            <span class="pad"><i></i><i></i><i></i><i></i><i></i></span>
+          </button>
+        </div>
+        <div class="pedal-col">
+          <div class="card-head">
+            <h2>Gas</h2>
+            <small id="gasPct">0%</small>
+          </div>
+          <button class="pedal gas" id="pedalGas" aria-label="Gas pedal (hold)">
+            <span class="arm"><i></i></span>
+            <span class="pad"><i></i><i></i><i></i><i></i><i></i><i></i><i></i></span>
+          </button>
+        </div>
+      </section>
+    </div>
+
+    <!-- Start menu -->
+    <div class="overlay" id="menu">
+      <div class="sheet">
+        <p class="eyebrow">Manual transmission</p>
+        <h2 class="sheet-title">Gear &amp; Clutch Race</h2>
+        <p class="lead">Beat the rival over 800 m. Shift like a pro.</p>
+
+        <div class="seg" id="diffSeg" role="radiogroup" aria-label="Rival">
+          <button data-d="easy" role="radio">Easy</button>
+          <button data-d="normal" role="radio">Normal</button>
+          <button data-d="hard" role="radio">Hard</button>
+        </div>
+        <p class="best" id="bestLine">Best: —</p>
+
+        <ol class="howto">
+          <li><b>Hold clutch</b>, drag the knob into <b>1</b>.</li>
+          <li>Hold <b>gas</b>, then let go of the clutch at <b>GO</b>.</li>
+          <li>Shift up when the <b>SHIFT</b> light glows (≈6,000 rpm).</li>
+          <li>No clutch = gear grind. Low rpm = stall. Too low a gear = engine damage.</li>
+        </ol>
+
+        <button class="btn primary" id="btnStart">Start race</button>
+        <p class="keys">Keyboard: Space = clutch · ↑ = gas · 1–5, R, N = gears</p>
+      </div>
+    </div>
+
+    <!-- Results -->
+    <div class="overlay" id="result" hidden>
+      <div class="sheet">
+        <p class="eyebrow" id="resEyebrow">Finish</p>
+        <h2 class="sheet-title" id="resTitle">You win!</h2>
+        <div class="res-grid">
+          <div><span>Your time</span><b id="resTime">0.00 s</b></div>
+          <div><span>Rival</span><b id="resRival">0.00 s</b></div>
+          <div><span>Top speed</span><b id="resTop">0 km/h</b></div>
+          <div><span>Perfect shifts</span><b id="resPerfect">0</b></div>
+          <div><span>Grinds</span><b id="resGrinds">0</b></div>
+          <div><span>Stalls</span><b id="resStalls">0</b></div>
+        </div>
+        <p class="best" id="resBest"></p>
+        <button class="btn primary" id="btnRetry">Race again</button>
+        <button class="btn ghost" id="btnMenu">Change rival</button>
+      </div>
+    </div>
+
+    <script src="script.js"></script>
+  </body>
+</html>
