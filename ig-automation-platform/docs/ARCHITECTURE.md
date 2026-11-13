@@ -157,9 +157,11 @@ We never use browser automation, password logins, scraping or unofficial APIs.
 
 | Threat | Mitigation |
 |---|---|
-| Forged webhooks | HMAC-SHA256 of the **raw body** with `META_APP_SECRET`, compared in constant time (Phase 3). `req.rawBody` is already captured in Phase 1. |
+| Forged webhooks | HMAC-SHA256 of the **raw body** with the app secret, compared in constant time (Phase 3). `req.rawBody` is already captured in Phase 1. |
 | Stolen DB dump | Instagram tokens are **AES-256-GCM encrypted** (`src/utils/crypto.js`), and the key lives only in `.env`. Passwords are bcrypt-hashed (cost 12). |
 | Session theft / CSRF | JWT in an `httpOnly` + `SameSite=Strict` + `Secure` (prod) cookie |
+| OAuth CSRF / account-swap | Random `state` nonce bound to a signed, 10-minute, path-scoped cookie and checked in constant time. The callback ignores everything until the state matches. |
+| Token leaks via URLs | Graph calls never log URLs (tokens are query params). Media paging follows cursors, not Meta's token-bearing `next` links. Redirects back to the dashboard carry fixed codes only. |
 | Brute-force login | 10 attempts / 15 min per IP, and the same response timing whether or not the email exists |
 | Secrets in the browser | The frontend only ever calls same-origin `/api`. **No API keys exist in frontend code or env.** |
 | Duplicate / replayed events | Unique keys on events, comments, messages and jobs |
@@ -196,8 +198,8 @@ ig-automation-platform/
 │   │   ├── controllers/       ← HTTP layer: parse request → call service → respond
 │   │   ├── services/          ← business logic (auth; later meta, automation, ai, …)
 │   │   ├── utils/             ← crypto (AES-GCM, HMAC helpers), HttpError
-│   │   ├── integrations/      ← (Phase 2+) metaGraph.js, claude.js API clients
-│   │   └── jobs/              ← (Phase 3+) worker.js, queue.js, handlers/
+│   │   ├── integrations/      ← instagramGraph.js (Phase 2); claude.js (Phase 5)
+│   │   └── jobs/              ← tokenRefresher.js (Phase 2); worker.js, queue.js (Phase 3+)
 │   └── tests/                 ← Vitest + Supertest
 └── frontend/                  ← React dashboard
     ├── index.html

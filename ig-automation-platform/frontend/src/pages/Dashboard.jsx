@@ -1,11 +1,12 @@
 import { useEffect, useState } from 'react';
-import { Bot, CircleCheck, CircleX, Database, LoaderCircle, Webhook } from 'lucide-react';
+import { Link } from 'react-router-dom';
+import { Bot, Camera, CircleCheck, CircleX, Database, LoaderCircle, Webhook } from 'lucide-react';
 import { api } from '../api/client.js';
 import { useAuth } from '../context/AuthContext.jsx';
 
 const ROADMAP = [
   { phase: 1, title: 'Architecture, database & admin login', done: true },
-  { phase: 2, title: 'Meta app setup & Instagram account connection' },
+  { phase: 2, title: 'Meta app setup & Instagram account connection', done: true },
   { phase: 3, title: 'Webhooks & comment detection' },
   { phase: 4, title: 'Public comment replies & private DMs' },
   { phase: 5, title: 'Claude AI chatbot & knowledge base' },
@@ -14,7 +15,7 @@ const ROADMAP = [
   { phase: 8, title: 'Deployment & 24/7 operation' },
 ];
 
-function StatusRow({ icon: Icon, label, ok, hint }) {
+function StatusRow({ icon: Icon, label, ok, hint, okLabel = 'Ready', badLabel = 'Not set' }) {
   return (
     <div className="flex items-center gap-3 rounded-xl border border-slate-100 p-3 sm:gap-4 sm:p-4">
       <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-slate-100 text-slate-600">
@@ -26,11 +27,11 @@ function StatusRow({ icon: Icon, label, ok, hint }) {
       </div>
       {ok ? (
         <span className="inline-flex items-center gap-1 rounded-full bg-emerald-50 px-2.5 py-1 text-xs font-medium text-emerald-700">
-          <CircleCheck className="h-3.5 w-3.5" /> Ready
+          <CircleCheck className="h-3.5 w-3.5" /> {okLabel}
         </span>
       ) : (
         <span className="inline-flex items-center gap-1 rounded-full bg-amber-50 px-2.5 py-1 text-xs font-medium text-amber-700">
-          <CircleX className="h-3.5 w-3.5" /> Not set
+          <CircleX className="h-3.5 w-3.5" /> {badLabel}
         </span>
       )}
     </div>
@@ -57,7 +58,10 @@ export default function Dashboard() {
 
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-5">
         <section className="card min-w-0 lg:col-span-3">
-          <h2 className="text-base font-semibold text-slate-900">System status</h2>
+          <div className="flex items-center justify-between">
+            <h2 className="text-base font-semibold text-slate-900">System status</h2>
+            <Link to="/settings" className="text-sm font-medium text-brand-600 hover:text-brand-700">Settings →</Link>
+          </div>
           {error && <p className="mt-4 text-sm text-red-600">{error}</p>}
           {!status && !error && <LoaderCircle className="mt-6 h-6 w-6 animate-spin text-brand-500" />}
           {status && (
@@ -65,9 +69,21 @@ export default function Dashboard() {
               <StatusRow icon={Database} label="MySQL database" ok={status.db} hint="Stores campaigns, comments, conversations" />
               <StatusRow
                 icon={Webhook}
-                label="Meta app credentials"
-                ok={status.integrations.metaAppConfigured}
-                hint="META_APP_ID / META_APP_SECRET / verify token — Phase 2"
+                label="Instagram app credentials"
+                ok={status.integrations.instagramAppConfigured}
+                hint="INSTAGRAM_APP_ID / INSTAGRAM_APP_SECRET"
+              />
+              <StatusRow
+                icon={Camera}
+                label="Instagram account"
+                ok={status.instagram.connected}
+                okLabel="Connected"
+                badLabel={status.instagram.needsReconnect ? 'Reconnect' : 'Not connected'}
+                hint={
+                  status.instagram.connected
+                    ? `@${status.instagram.username} · token ${status.instagram.tokenDaysLeft} days left`
+                    : 'Connect it in Settings'
+                }
               />
               <StatusRow
                 icon={Bot}

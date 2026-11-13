@@ -16,8 +16,8 @@ model, schema and prerequisites.
 | Phase | Scope | Status |
 |---|---|---|
 | 1 | Architecture, folder structure, full DB schema, admin auth, dashboard shell | ✅ Done |
-| 2 | Meta Developer App setup + Instagram account connection (OAuth) | ⏳ Next |
-| 3 | Webhooks + comment detection | |
+| 2 | Meta Developer App setup + Instagram account connection (OAuth) | ✅ Done ([setup guide](docs/PHASE-2-META-SETUP.md)) |
+| 3 | Webhooks + comment detection | ⏳ Next |
 | 4 | Public comment replies + private DMs | |
 | 5 | Claude AI chatbot + knowledge base | |
 | 6 | Admin dashboard + settings | |
@@ -66,7 +66,7 @@ npm run dev                   # http://localhost:5173
 ```
 
 Open <http://localhost:5173> and sign in. The **System status** card shows the database as
-*Ready*, and Meta and Claude as *Not set* until Phases 2 and 5.
+*Ready*. To connect Instagram, follow **[docs/PHASE-2-META-SETUP.md](docs/PHASE-2-META-SETUP.md)**.
 
 The frontend has **no `.env`**: it only calls `/api` on its own origin (Vite proxies it in
 dev, Nginx in production), so no keys can leak into the browser bundle.
@@ -78,9 +78,10 @@ cd backend
 npm test
 ```
 
-The tests mock the database, so they run without MySQL. They cover token encryption
-(round-trip, tamper detection, wrong key), health checks, security headers, login
-validation, wrong-password rejection, the httpOnly cookie session, forged tokens and 404s.
+The tests mock the database and Meta's API, so they run offline without MySQL. They cover
+token encryption, login and sessions, security headers, the Instagram OAuth flow (state/CSRF
+checks, expired and forged callbacks, cancel, partial permissions), token exchange and refresh,
+Graph API error mapping, and media paging.
 
 ---
 
@@ -90,16 +91,16 @@ validation, wrong-password rejection, the httpOnly cookie session, forged tokens
 |---|---|---|
 | `NODE_ENV` | | `development` / `production` |
 | `PORT` | | API port (default 4000) |
-| `APP_BASE_URL` | | Public HTTPS URL of the API (OAuth + webhook callbacks) |
-| `FRONTEND_URL` | | Dashboard origin (CORS) |
+| `APP_BASE_URL` | | Public HTTPS URL of the app; the OAuth redirect URI is `APP_BASE_URL/api/instagram/oauth/callback` |
+| `FRONTEND_URL` | | Dashboard origin (CORS + redirect after connecting). Same as `APP_BASE_URL` when using a tunnel or Nginx |
 | `TRUST_PROXY` | | `true` behind Nginx |
 | `DB_HOST` `DB_PORT` `DB_USER` `DB_PASSWORD` `DB_NAME` | ✅ | MySQL connection |
 | `JWT_SECRET` | ✅ | ≥ 32 chars, signs admin sessions |
 | `JWT_EXPIRES_IN` | | Session length (default `12h`) |
 | `ENCRYPTION_KEY` | ✅ | 32 bytes base64, encrypts Instagram tokens. **Back it up.** |
-| `META_APP_ID` `META_APP_SECRET` | Phase 2 | From your Meta app |
+| `INSTAGRAM_APP_ID` `INSTAGRAM_APP_SECRET` | Phase 2 | **Instagram** app ID/secret from *API setup with Instagram login* (not the Meta App ID) |
 | `META_WEBHOOK_VERIFY_TOKEN` | Phase 3 | Random string you also enter in the Meta webhook settings |
-| `META_GRAPH_API_VERSION` | | e.g. `v24.0`; use the latest in Meta's changelog |
+| `META_GRAPH_API_VERSION` | | Default `v26.0`; use the latest in Meta's changelog |
 | `ANTHROPIC_API_KEY` | Phase 5 | Claude API key |
 | `ANTHROPIC_MODEL` | | Default `claude-opus-5-5` |
 

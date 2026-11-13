@@ -9,6 +9,8 @@ export default defineConfig({
   plugins: [react(), tailwindcss()],
   server: {
     port: 5173,
+    // Allow the HTTPS tunnel hostnames used to test Instagram login + webhooks locally.
+    allowedHosts: ['.ngrok-free.app', '.ngrok.app', '.trycloudflare.com'],
     proxy: {
       '/api': { target: 'http://localhost:4000', changeOrigin: false },
     },

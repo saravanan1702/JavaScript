@@ -2,6 +2,7 @@ import { env, integrations } from './config/env.js';
 import { logger } from './config/logger.js';
 import { db, pingDb } from './db/knex.js';
 import { createApp } from './app.js';
+import { startTokenRefresher } from './jobs/tokenRefresher.js';
 
 async function main() {
   if (!(await pingDb())) {
@@ -12,16 +13,18 @@ async function main() {
   const app = createApp();
   const server = app.listen(env.PORT, () => {
     logger.info(`API listening on http://localhost:${env.PORT} (${env.NODE_ENV})`);
-    if (!integrations.meta) logger.warn('Meta app credentials not set yet — needed from Phase 2.');
+    if (!integrations.instagramLogin) logger.warn('INSTAGRAM_APP_ID / INSTAGRAM_APP_SECRET not set — Instagram connection disabled.');
     if (!integrations.claude) logger.warn('ANTHROPIC_API_KEY not set yet — needed from Phase 5.');
   });
 
+  const stopTokenRefresher = startTokenRefresher();
   // Phase 3/4 starts the background job worker here.
 
   // Graceful shutdown: PM2/systemd send SIGTERM on restart/deploy.
   // Stop accepting requests, let in-flight ones finish, then close the DB pool.
   const shutdown = (signal) => {
     logger.info(`${signal} received, shutting down…`);
+    stopTokenRefresher();
     server.close(async () => {
       await db.destroy();
       process.exit(0);

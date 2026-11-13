@@ -13,8 +13,8 @@ const schema = z.object({
   PORT: z.coerce.number().int().positive().default(4000),
   LOG_LEVEL: z.enum(['fatal', 'error', 'warn', 'info', 'debug', 'trace']).default('info'),
 
-  // Public HTTPS URL of this backend (used for OAuth redirect + webhook callback URLs).
-  APP_BASE_URL: z.url().default('http://localhost:4000'),
+  // Public HTTPS URL of the app (OAuth redirect + webhook callback URLs are built from it).
+  APP_BASE_URL: z.url().default('http://localhost:5173'),
   // Where the React dashboard is served from (CORS + post-OAuth redirect).
   FRONTEND_URL: z.url().default('http://localhost:5173'),
   // Set to true when running behind Nginx so req.ip / secure cookies work.
@@ -39,11 +39,13 @@ const schema = z.object({
       message: 'ENCRYPTION_KEY must be 32 bytes, base64-encoded (run: npm run gen-secrets)',
     }),
 
-  // Meta / Instagram (required from Phase 2 onwards)
-  META_APP_ID: z.string().optional(),
-  META_APP_SECRET: z.string().optional(),
-  META_WEBHOOK_VERIFY_TOKEN: z.string().optional(),
-  META_GRAPH_API_VERSION: z.string().regex(/^v\d+\.\d+$/).default('v24.0'),
+  // Instagram API with Instagram Login (required from Phase 2 onwards).
+  // NOTE: these are the *Instagram* app ID/secret shown under
+  // App Dashboard → Instagram → "API setup with Instagram login" — NOT the Meta App ID at the top of the dashboard.
+  INSTAGRAM_APP_ID: z.string().optional(),
+  INSTAGRAM_APP_SECRET: z.string().optional(),
+  META_WEBHOOK_VERIFY_TOKEN: z.string().optional(), // Phase 3
+  META_GRAPH_API_VERSION: z.string().regex(/^v\d+\.\d+$/).default('v26.0'),
 
   // Claude (required from Phase 5 onwards)
   ANTHROPIC_API_KEY: z.string().optional(),
@@ -69,6 +71,10 @@ export const env = Object.freeze({
 
 /** Which optional integrations are configured — surfaced on the status endpoint. */
 export const integrations = Object.freeze({
-  meta: Boolean(env.META_APP_ID && env.META_APP_SECRET && env.META_WEBHOOK_VERIFY_TOKEN),
+  instagramLogin: Boolean(env.INSTAGRAM_APP_ID && env.INSTAGRAM_APP_SECRET),
+  webhooks: Boolean(env.INSTAGRAM_APP_SECRET && env.META_WEBHOOK_VERIFY_TOKEN),
   claude: Boolean(env.ANTHROPIC_API_KEY),
 });
+
+/** The exact OAuth redirect URI — must match the one registered in the Meta App Dashboard character for character. */
+export const INSTAGRAM_REDIRECT_URI = `${env.APP_BASE_URL.replace(/\/$/, '')}/api/instagram/oauth/callback`;

@@ -4,6 +4,7 @@ import Layout from './components/Layout.jsx';
 import Login from './pages/Login.jsx';
 import Dashboard from './pages/Dashboard.jsx';
 import ComingSoon from './pages/ComingSoon.jsx';
+import Settings from './pages/Settings.jsx';
 
 export default function App() {
   return (
@@ -17,7 +18,7 @@ export default function App() {
           <Route path="knowledge" element={<ComingSoon title="Knowledge Base" phase={5} />} />
           <Route path="analytics" element={<ComingSoon title="Analytics" phase={7} />} />
           <Route path="logs" element={<ComingSoon title="Webhook & Error Logs" phase={3} />} />
-          <Route path="settings" element={<ComingSoon title="Settings & Instagram Connection" phase={2} />} />
+          <Route path="settings" element={<Settings />} />
         </Route>
       </Route>
       <Route path="*" element={<Navigate to="/" replace />} />

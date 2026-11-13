@@ -1,5 +1,6 @@
 import { Router } from 'express';
 import { pingDb } from '../db/knex.js';
+import { listAccounts } from '../services/instagramAccount.service.js';
 import { integrations } from '../config/env.js';
 import { requireAdmin } from '../middleware/auth.js';
 
@@ -11,14 +12,21 @@ router.get('/', async (_req, res) => {
   res.status(dbOk ? 200 : 503).json({ status: dbOk ? 'ok' : 'degraded', db: dbOk });
 });
 
-// Detailed status for the dashboard (admin only). Phase 2+ adds Instagram token status.
+// Detailed status for the dashboard (admin only).
 router.get('/status', requireAdmin, async (_req, res) => {
+  const db = await pingDb();
+  const accounts = db ? await listAccounts() : [];
+  const active = accounts.find((a) => a.status === 'active');
   res.json({
-    db: await pingDb(),
+    db,
     integrations: {
-      metaAppConfigured: integrations.meta,
+      instagramAppConfigured: integrations.instagramLogin,
+      webhooksConfigured: integrations.webhooks,
       claudeConfigured: integrations.claude,
     },
+    instagram: active
+      ? { connected: true, username: active.username, tokenDaysLeft: active.tokenDaysLeft, missingScopes: active.missingScopes }
+      : { connected: false, needsReconnect: accounts.some((a) => a.status === 'token_expired') },
     uptimeSeconds: Math.round(process.uptime()),
     version: process.env.npm_package_version ?? '0.1.0',
   });
