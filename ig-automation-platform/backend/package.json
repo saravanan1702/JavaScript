@@ -1,0 +1,42 @@
+{
+  "name": "ig-automation-backend",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Self-hosted Instagram comment & DM automation API (Express + MySQL)",
+  "type": "module",
+  "main": "src/server.js",
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "dev": "node --watch src/server.js",
+    "start": "node src/server.js",
+    "migrate": "knex migrate:latest --knexfile knexfile.js",
+    "migrate:rollback": "knex migrate:rollback --knexfile knexfile.js",
+    "migrate:make": "knex migrate:make --knexfile knexfile.js",
+    "create-admin": "node scripts/create-admin.js",
+    "gen-secrets": "node scripts/generate-secrets.js",
+    "test": "vitest run",
+    "test:watch": "vitest"
+  },
+  "dependencies": {
+    "bcryptjs": "^3.0.3",
+    "cookie-parser": "^1.4.7",
+    "cors": "^2.8.6",
+    "dotenv": "^18.0.10",
+    "express": "^5.3.0",
+    "express-rate-limit": "^8.7.4",
+    "helmet": "^8.3.0",
+    "jsonwebtoken": "^9.0.3",
+    "knex": "^3.3.0",
+    "mysql2": "^3.24.6",
+    "pino": "^10.4.0",
+    "pino-http": "^11.0.0",
+    "zod": "^4.6.7"
+  },
+  "devDependencies": {
+    "pino-pretty": "^13.2.0",
+    "supertest": "^7.3.2",
+    "vitest": "^5.1.0"
+  }
+}

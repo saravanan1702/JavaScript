@@ -1,0 +1,27 @@
+# Local development database. In production, MySQL runs directly on the VPS
+# (or Amazon RDS) — see Phase 8.
+services:
+  mysql:
+    image: mysql:8.4
+    container_name: igauto-mysql
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-rootpass_change_me}
+      MYSQL_DATABASE: ${DB_NAME:-ig_automation}
+      MYSQL_USER: ${DB_USER:-igauto}
+      MYSQL_PASSWORD: ${DB_PASSWORD:-igauto_dev_password}
+    command:
+      - --character-set-server=utf8mb4
+      - --collation-server=utf8mb4_unicode_ci
+    ports:
+      - "127.0.0.1:3306:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+
+volumes:
+  mysql_data:

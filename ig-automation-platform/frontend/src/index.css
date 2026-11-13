@@ -1,0 +1,39 @@
+@import "tailwindcss";
+
+/* Design tokens — change the brand colours here and the whole dashboard follows. */
+@theme {
+  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+
+  --color-brand-50: #fdf2f8;
+  --color-brand-100: #fce7f3;
+  --color-brand-500: #e1306c;
+  --color-brand-600: #c81e5b;
+  --color-brand-700: #a3164a;
+  --color-accent-500: #f77737;
+  --color-violet-brand: #833ab4;
+
+  --color-ink-900: #0f1222;
+  --color-ink-800: #171a2e;
+  --color-ink-700: #23273f;
+}
+
+@layer base {
+  body {
+    @apply bg-slate-50 font-sans text-slate-800 antialiased;
+  }
+}
+
+@layer components {
+  .card {
+    @apply rounded-2xl border border-slate-200/70 bg-white p-6 shadow-sm;
+  }
+  .btn-primary {
+    @apply inline-flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-violet-brand via-brand-500 to-accent-500 px-4 py-2.5 text-sm font-semibold text-white shadow-md shadow-brand-500/20 transition hover:brightness-110 focus:outline-none focus-visible:ring-4 focus-visible:ring-brand-500/30 disabled:cursor-not-allowed disabled:opacity-60;
+  }
+  .input {
+    @apply w-full rounded-xl border border-slate-200 bg-white px-3.5 py-2.5 text-sm text-slate-900 placeholder:text-slate-400 transition focus:border-brand-500 focus:outline-none focus:ring-4 focus:ring-brand-500/15;
+  }
+  .label {
+    @apply mb-1.5 block text-sm font-medium text-slate-700;
+  }
+}
