@@ -185,7 +185,8 @@ ig-automation-platform/
 │   ├── package.json
 │   ├── scripts/
 │   │   ├── create-admin.js    ← create the first dashboard login
-│   │   └── generate-secrets.js
+│   │   ├── generate-secrets.js
+│   │   └── simulate-webhook.js ← send a signed test comment (no Meta needed)
 │   ├── src/
 │   │   ├── server.js          ← entry: DB check, HTTP server, (worker), graceful shutdown
 │   │   ├── app.js             ← Express app: security middleware, raw body capture, routes
@@ -199,7 +200,7 @@ ig-automation-platform/
 │   │   ├── services/          ← business logic (auth; later meta, automation, ai, …)
 │   │   ├── utils/             ← crypto (AES-GCM, HMAC helpers), HttpError
 │   │   ├── integrations/      ← instagramGraph.js (Phase 2); claude.js (Phase 5)
-│   │   └── jobs/              ← tokenRefresher.js (Phase 2); worker.js, queue.js (Phase 3+)
+│   │   └── jobs/              ← tokenRefresher.js, queue.js (MySQL queue), worker.js, handlers.js
 │   └── tests/                 ← Vitest + Supertest
 └── frontend/                  ← React dashboard
     ├── index.html

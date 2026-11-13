@@ -84,8 +84,9 @@ export async function oauthCallback(req, res) {
 
   try {
     const account = await accounts.connectFromAuthCode(code);
-    // Best effort: pull the Reels list right away so campaigns can use it.
+    // Best effort: pull the Reels list and subscribe to webhooks right away.
     media.syncMedia(account.id).catch((err) => logger.warn({ err: err.message }, 'Initial media sync failed'));
+    accounts.subscribeWebhooks(account.id).catch((err) => logger.warn({ err: err.message }, 'Initial webhook subscription failed'));
     return back(account.missingScopes.length ? 'partial' : 'connected');
   } catch (err) {
     await logActivity({
@@ -104,6 +105,19 @@ export async function list(_req, res) {
 
 export async function refreshToken(req, res) {
   res.json({ account: await accounts.refreshAccountToken(req.params.id) });
+}
+
+export async function subscribeWebhooks(req, res) {
+  res.json(await accounts.subscribeWebhooks(req.params.id));
+}
+
+/** Values the admin needs to paste into the Meta webhook settings. The verify token itself is never sent. */
+export function webhookInfo(_req, res) {
+  res.json({
+    callbackUrl: `${env.APP_BASE_URL.replace(/\/$/, '')}/api/webhooks/instagram`,
+    verifyTokenConfigured: Boolean(env.META_WEBHOOK_VERIFY_TOKEN),
+    fields: ['comments', 'messages'],
+  });
 }
 
 export async function syncMedia(req, res) {

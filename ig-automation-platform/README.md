@@ -17,8 +17,8 @@ model, schema and prerequisites.
 |---|---|---|
 | 1 | Architecture, folder structure, full DB schema, admin auth, dashboard shell | ✅ Done |
 | 2 | Meta Developer App setup + Instagram account connection (OAuth) | ✅ Done ([setup guide](docs/PHASE-2-META-SETUP.md)) |
-| 3 | Webhooks + comment detection | ⏳ Next |
-| 4 | Public comment replies + private DMs | |
+| 3 | Webhooks + comment detection | ✅ Done ([setup guide](docs/PHASE-3-WEBHOOKS.md)) |
+| 4 | Public comment replies + private DMs | ⏳ Next |
 | 5 | Claude AI chatbot + knowledge base | |
 | 6 | Admin dashboard + settings | |
 | 7 | Customer inbox + analytics | |
@@ -81,7 +81,9 @@ npm test
 The tests mock the database and Meta's API, so they run offline without MySQL. They cover
 token encryption, login and sessions, security headers, the Instagram OAuth flow (state/CSRF
 checks, expired and forged callbacks, cancel, partial permissions), token exchange and refresh,
-Graph API error mapping, and media paging.
+Graph API error mapping, media paging, webhook verification and signatures (forged, tampered,
+missing), event parsing and dedupe identities, keyword matching (emoji, Tamil, Hindi, plurals,
+exact mode), and the comment rules (own comments, automation switch, thread replies, repeat commenters).
 
 ---
 
@@ -100,6 +102,7 @@ Graph API error mapping, and media paging.
 | `ENCRYPTION_KEY` | ✅ | 32 bytes base64, encrypts Instagram tokens. **Back it up.** |
 | `INSTAGRAM_APP_ID` `INSTAGRAM_APP_SECRET` | Phase 2 | **Instagram** app ID/secret from *API setup with Instagram login* (not the Meta App ID) |
 | `META_WEBHOOK_VERIFY_TOKEN` | Phase 3 | Random string you also enter in the Meta webhook settings |
+| `META_APP_SECRET` | optional | Meta App secret; webhook signatures are accepted if they match this or the Instagram app secret |
 | `META_GRAPH_API_VERSION` | | Default `v26.0`; use the latest in Meta's changelog |
 | `ANTHROPIC_API_KEY` | Phase 5 | Claude API key |
 | `ANTHROPIC_MODEL` | | Default `claude-opus-5-5` |
@@ -113,4 +116,5 @@ npm run migrate            # apply migrations
 npm run migrate:rollback   # undo the last batch
 npm run create-admin       # add another admin
 npm run gen-secrets        # new random secrets
+npm run webhook:simulate -- "Price?"   # send a signed test comment to the local server
 ```

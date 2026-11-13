@@ -17,7 +17,8 @@
     "create-admin": "node scripts/create-admin.js",
     "gen-secrets": "node scripts/generate-secrets.js",
     "test": "vitest run",
-    "test:watch": "vitest"
+    "test:watch": "vitest",
+    "webhook:simulate": "node scripts/simulate-webhook.js"
   },
   "dependencies": {
     "bcryptjs": "^3.0.3",

@@ -14,7 +14,12 @@ export default {
     timezone: 'Z', // store and read all DATETIMEs as UTC
     dateStrings: false,
   },
-  pool: { min: 0, max: env.DB_POOL_MAX },
+  pool: {
+    min: 0,
+    max: env.DB_POOL_MAX,
+    // Make NOW()/CURRENT_TIMESTAMP UTC too, so DB defaults and JS Dates always agree.
+    afterCreate: (conn, done) => conn.query("SET time_zone = '+00:00'", (err) => done(err, conn)),
+  },
   migrations: {
     directory: './src/db/migrations',
     tableName: 'knex_migrations',

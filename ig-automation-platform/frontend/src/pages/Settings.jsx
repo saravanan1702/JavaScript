@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import {
-  CircleAlert, CircleCheck, ExternalLink, Film, KeyRound, LoaderCircle, MessageCircle, RefreshCw, Unplug, Link2,
+  CircleAlert, CircleCheck, Copy, ExternalLink, Film, KeyRound, LoaderCircle, MessageCircle, RefreshCw, Unplug, Link2, Webhook,
 } from 'lucide-react';
 import { api } from '../api/client.js';
 
@@ -121,6 +121,8 @@ export default function Settings() {
   const [loading, setLoading] = useState(true);
   const [busy, setBusy] = useState(''); // which action is running
   const [notice, setNotice] = useState(null);
+  const [webhookInfo, setWebhookInfo] = useState(null);
+  const [copied, setCopied] = useState(false);
 
   // Show the result of the Instagram redirect once, then clean the URL.
   useEffect(() => {
@@ -138,8 +140,9 @@ export default function Settings() {
 
   const load = useCallback(async () => {
     try {
-      const [s, a] = await Promise.all([api.get('/health/status'), api.get('/instagram/accounts')]);
+      const [s, a, w] = await Promise.all([api.get('/health/status'), api.get('/instagram/accounts'), api.get('/instagram/webhook-info')]);
       setStatus(s);
+      setWebhookInfo(w);
       setAccounts(a.accounts);
       const current = a.accounts.find((x) => x.status !== 'disconnected');
       setReels(current ? (await api.get(`/instagram/accounts/${current.id}/media?reelsOnly=true&limit=24`)).media : []);
@@ -194,7 +197,7 @@ export default function Settings() {
     <div className="space-y-6">
       <div>
         <h1 className="text-2xl font-semibold text-slate-900">Settings</h1>
-        <p className="mt-1 text-sm text-slate-500">Connect your Instagram professional account.</p>
+        <p className="mt-1 text-sm text-slate-500">Instagram connection and webhooks.</p>
       </div>
 
       {notice && <Banner tone={notice.tone} onClose={() => setNotice(null)}>{notice.text}</Banner>}
@@ -322,6 +325,76 @@ export default function Settings() {
           </div>
         )}
       </section>
+
+
+      {webhookInfo && (
+        <section className="card">
+          <div className="flex items-center justify-between gap-4">
+            <h2 className="flex items-center gap-2 text-base font-semibold text-slate-900">
+              <Webhook className="h-4 w-4 text-slate-500" /> Webhooks
+            </h2>
+            {account && (
+              account.webhooksSubscribed
+                ? <span className="rounded-full bg-emerald-50 px-2.5 py-1 text-xs font-medium text-emerald-700">Receiving events</span>
+                : <span className="rounded-full bg-amber-50 px-2.5 py-1 text-xs font-medium text-amber-700">Not subscribed</span>
+            )}
+          </div>
+          <p className="mt-1 text-sm text-slate-500">
+            Meta sends new comments and DMs to this address in real time. Paste it into the Meta App Dashboard
+            (see <code className="font-mono text-xs">docs/PHASE-3-WEBHOOKS.md</code>).
+          </p>
+
+          <div className="mt-4 space-y-3">
+            <div>
+              <p className="label">Callback URL</p>
+              <div className="flex gap-2">
+                <code className="min-w-0 flex-1 truncate rounded-xl border border-slate-200 bg-slate-50 px-3.5 py-2.5 font-mono text-sm text-slate-800">
+                  {webhookInfo.callbackUrl}
+                </code>
+                <button
+                  type="button"
+                  onClick={async () => {
+                    try {
+                      await navigator.clipboard.writeText(webhookInfo.callbackUrl);
+                      setCopied(true);
+                      setTimeout(() => setCopied(false), 1500);
+                    } catch { /* clipboard blocked — the URL is visible to copy by hand */ }
+                  }}
+                  className="inline-flex items-center gap-1.5 rounded-xl border border-slate-200 px-3 text-sm font-medium text-slate-700 hover:bg-slate-50"
+                >
+                  <Copy className="h-4 w-4" /> {copied ? 'Copied' : 'Copy'}
+                </button>
+              </div>
+              {webhookInfo.callbackUrl.startsWith('http://') && (
+                <p className="mt-1.5 text-xs text-amber-700">Meta requires HTTPS — set APP_BASE_URL to your tunnel or domain.</p>
+              )}
+            </div>
+            <div className="grid gap-3 sm:grid-cols-2">
+              <div className="rounded-xl bg-slate-50 p-3">
+                <p className="text-xs text-slate-500">Verify token</p>
+                <p className="mt-1 text-sm font-medium text-slate-900">
+                  {webhookInfo.verifyTokenConfigured ? 'Set in backend/.env (META_WEBHOOK_VERIFY_TOKEN)' : 'Not set: add META_WEBHOOK_VERIFY_TOKEN to backend/.env'}
+                </p>
+              </div>
+              <div className="rounded-xl bg-slate-50 p-3">
+                <p className="text-xs text-slate-500">Fields to subscribe</p>
+                <p className="mt-1 font-mono text-sm text-slate-900">{webhookInfo.fields.join(', ')}</p>
+              </div>
+            </div>
+            {account?.status === 'active' && (
+              <button
+                type="button"
+                disabled={!!busy}
+                onClick={() => run('subscribe', () => api.post(`/instagram/accounts/${account.id}/subscribe-webhooks`), 'Account subscribed to webhooks.')}
+                className="inline-flex items-center gap-2 rounded-xl border border-slate-200 px-3.5 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50 disabled:opacity-50"
+              >
+                <RefreshCw className={`h-4 w-4 ${busy === 'subscribe' ? 'animate-spin' : ''}`} />
+                {account.webhooksSubscribed ? 'Re-subscribe account' : 'Subscribe account to webhooks'}
+              </button>
+            )}
+          </div>
+        </section>
+      )}
 
       {account && (
         <section className="card">

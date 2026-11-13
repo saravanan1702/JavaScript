@@ -25,7 +25,7 @@ router.get('/status', requireAdmin, async (_req, res) => {
       claudeConfigured: integrations.claude,
     },
     instagram: active
-      ? { connected: true, username: active.username, tokenDaysLeft: active.tokenDaysLeft, missingScopes: active.missingScopes }
+      ? { connected: true, username: active.username, tokenDaysLeft: active.tokenDaysLeft, missingScopes: active.missingScopes, webhooksSubscribed: active.webhooksSubscribed }
       : { connected: false, needsReconnect: accounts.some((a) => a.status === 'token_expired') },
     uptimeSeconds: Math.round(process.uptime()),
     version: process.env.npm_package_version ?? '0.1.0',

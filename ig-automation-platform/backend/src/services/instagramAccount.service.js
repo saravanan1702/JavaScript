@@ -129,6 +129,24 @@ export async function refreshExpiringTokens() {
   return results;
 }
 
+/** Subscribes the app to comment + message webhooks for this account. */
+export async function subscribeWebhooks(id) {
+  const row = await getAccount(id);
+  const token = await getAccessToken(id);
+  try {
+    await ig.subscribeAccountToWebhooks(token);
+    const fields = await ig.getAccountSubscriptions(token).catch(() => ig.WEBHOOK_FIELDS);
+    const ok = ig.WEBHOOK_FIELDS.every((f) => fields.includes(f));
+    await db('instagram_accounts').where({ id }).update({ webhooks_subscribed: ok, updated_at: new Date() });
+    await logActivity({ scope: 'webhook', message: `Subscribed @${row.username} to webhooks (${fields.join(', ') || 'none reported'})`, context: { accountId: id } });
+    return { subscribed: ok, fields };
+  } catch (err) {
+    await db('instagram_accounts').where({ id }).update({ webhooks_subscribed: false, updated_at: new Date() });
+    await handleGraphError(id, err, `Webhook subscription failed for @${row.username}`);
+    throw err;
+  }
+}
+
 /** Forgets the token locally. (To fully revoke, also remove the app in Instagram → Settings → Website permissions.) */
 export async function disconnectAccount(id) {
   const row = await getAccount(id);

@@ -1,12 +1,13 @@
 import { useState } from 'react';
 import { NavLink, Outlet } from 'react-router-dom';
 import {
-  Activity, BookOpen, ChartColumn, Inbox, LayoutDashboard, LogOut, Megaphone, Menu, Settings, X,
+  Activity, BookOpen, ChartColumn, Inbox, LayoutDashboard, LogOut, Megaphone, Menu, MessageSquareText, Settings, X,
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext.jsx';
 
 const NAV = [
   { to: '/', label: 'Dashboard', icon: LayoutDashboard, end: true },
+  { to: '/comments', label: 'Comments', icon: MessageSquareText },
   { to: '/campaigns', label: 'Campaigns', icon: Megaphone },
   { to: '/inbox', label: 'Inbox', icon: Inbox },
   { to: '/knowledge', label: 'Knowledge Base', icon: BookOpen },

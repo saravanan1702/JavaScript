@@ -7,7 +7,7 @@ import { useAuth } from '../context/AuthContext.jsx';
 const ROADMAP = [
   { phase: 1, title: 'Architecture, database & admin login', done: true },
   { phase: 2, title: 'Meta app setup & Instagram account connection', done: true },
-  { phase: 3, title: 'Webhooks & comment detection' },
+  { phase: 3, title: 'Webhooks & comment detection', done: true },
   { phase: 4, title: 'Public comment replies & private DMs' },
   { phase: 5, title: 'Claude AI chatbot & knowledge base' },
   { phase: 6, title: 'Admin dashboard & settings' },
@@ -84,6 +84,14 @@ export default function Dashboard() {
                     ? `@${status.instagram.username} · token ${status.instagram.tokenDaysLeft} days left`
                     : 'Connect it in Settings'
                 }
+              />
+              <StatusRow
+                icon={Webhook}
+                label="Webhooks"
+                ok={status.integrations.webhooksConfigured && status.instagram.webhooksSubscribed}
+                okLabel="Receiving"
+                badLabel={status.integrations.webhooksConfigured ? 'Not subscribed' : 'Not set'}
+                hint={status.integrations.webhooksConfigured ? 'Comments + DMs delivered in real time' : 'META_WEBHOOK_VERIFY_TOKEN + Meta dashboard setup'}
               />
               <StatusRow
                 icon={Bot}

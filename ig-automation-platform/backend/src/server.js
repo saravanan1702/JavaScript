@@ -3,6 +3,7 @@ import { logger } from './config/logger.js';
 import { db, pingDb } from './db/knex.js';
 import { createApp } from './app.js';
 import { startTokenRefresher } from './jobs/tokenRefresher.js';
+import { startWorker } from './jobs/worker.js';
 
 async function main() {
   if (!(await pingDb())) {
@@ -18,7 +19,7 @@ async function main() {
   });
 
   const stopTokenRefresher = startTokenRefresher();
-  // Phase 3/4 starts the background job worker here.
+  const stopWorker = startWorker();
 
   // Graceful shutdown: PM2/systemd send SIGTERM on restart/deploy.
   // Stop accepting requests, let in-flight ones finish, then close the DB pool.
@@ -26,6 +27,7 @@ async function main() {
     logger.info(`${signal} received, shutting down…`);
     stopTokenRefresher();
     server.close(async () => {
+      await stopWorker(); // let in-flight jobs finish
       await db.destroy();
       process.exit(0);
     });

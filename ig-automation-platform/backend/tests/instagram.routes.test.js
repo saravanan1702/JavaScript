@@ -14,6 +14,7 @@ vi.mock('../src/services/instagramAccount.service.js', () => ({
   getAccount: vi.fn(),
   refreshAccountToken: vi.fn(),
   disconnectAccount: vi.fn(),
+  subscribeWebhooks: vi.fn(async () => ({ subscribed: true, fields: ['comments', 'messages'] })),
 }));
 vi.mock('../src/services/media.service.js', () => ({ syncMedia: vi.fn(async () => ({ synced: 0 })), listMedia: vi.fn() }));
 

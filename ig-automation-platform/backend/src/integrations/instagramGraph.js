@@ -207,6 +207,27 @@ export async function listMediaPage(accessToken, { limit = 50, after } = {}) {
   };
 }
 
+// ─────────────────────────── Webhook subscription ───────────────────────────
+
+export const WEBHOOK_FIELDS = ['comments', 'messages'];
+
+/**
+ * Subscribes OUR app to this account's events. Needed in addition to the app-level
+ * webhook configuration in the Meta dashboard — otherwise Meta sends nothing for the account.
+ */
+export async function subscribeAccountToWebhooks(accessToken, fields = WEBHOOK_FIELDS) {
+  const url = graphUrl('me/subscribed_apps', { subscribed_fields: fields.join(','), access_token: accessToken });
+  const body = await send(url, { method: 'POST' });
+  return body.success === true;
+}
+
+/** Which fields our app is currently subscribed to for this account. */
+export async function getAccountSubscriptions(accessToken) {
+  const body = await graphGet('me/subscribed_apps', accessToken);
+  const fields = (body.data ?? []).flatMap((app) => app.subscribed_fields ?? []);
+  return [...new Set(fields.map(String))];
+}
+
 // ─────────────────────────── helpers ───────────────────────────
 
 /** Instagram sometimes appends "#_" to the code in the redirect URL. */

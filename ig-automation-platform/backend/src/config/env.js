@@ -44,7 +44,11 @@ const schema = z.object({
   // App Dashboard → Instagram → "API setup with Instagram login" — NOT the Meta App ID at the top of the dashboard.
   INSTAGRAM_APP_ID: z.string().optional(),
   INSTAGRAM_APP_SECRET: z.string().optional(),
-  META_WEBHOOK_VERIFY_TOKEN: z.string().optional(), // Phase 3
+  META_WEBHOOK_VERIFY_TOKEN: z.string().optional(), // Phase 3: echoed back during webhook verification
+  // Optional: the Meta App secret (App settings → Basic). Webhook signatures are checked against
+  // the Instagram app secret AND this one, because Meta signs with whichever secret belongs to
+  // the product the webhook was configured under.
+  META_APP_SECRET: z.string().optional(),
   META_GRAPH_API_VERSION: z.string().regex(/^v\d+\.\d+$/).default('v26.0'),
 
   // Claude (required from Phase 5 onwards)

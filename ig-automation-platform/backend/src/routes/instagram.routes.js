@@ -15,6 +15,8 @@ router.get('/oauth/callback', callbackLimiter, c.oauthCallback);
 router.use(requireAdmin);
 router.get('/connect', c.startConnect);
 router.get('/accounts', c.list);
+router.get('/webhook-info', c.webhookInfo);
+router.post('/accounts/:id/subscribe-webhooks', validate({ params: c.schemas.idParams }), c.subscribeWebhooks);
 router.post('/accounts/:id/refresh-token', validate({ params: c.schemas.idParams }), c.refreshToken);
 router.post('/accounts/:id/sync-media', validate({ params: c.schemas.idParams }), c.syncMedia);
 router.get('/accounts/:id/media', validate({ params: c.schemas.idParams, query: c.schemas.mediaQuery }), c.listMedia);
