@@ -76,6 +76,19 @@ export async function failJob(job, err, { retryable = true } = {}) {
   return 'failed';
 }
 
+/** Postpones a job (e.g. hourly safety limit reached) WITHOUT using up one of its retry attempts. */
+export async function deferJob(job, runAt, reason) {
+  await db('jobs').where({ id: job.id }).update({
+    status: 'pending',
+    run_at: runAt,
+    attempts: Math.max(0, job.attempts - 1),
+    locked_at: null,
+    locked_by: null,
+    last_error: reason ? `Deferred: ${String(reason).slice(0, 500)}` : null,
+    updated_at: new Date(),
+  });
+}
+
 /** 30s, 2m, 8m, 32m… capped at 1h, ±20% jitter. Rate-limit errors wait at least 5 minutes. */
 export function backoffMs(attempt, err) {
   const base = Math.min(30_000 * 4 ** Math.max(0, attempt - 1), 60 * 60 * 1000);

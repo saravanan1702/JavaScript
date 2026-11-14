@@ -7,6 +7,7 @@ import { notFound } from '../utils/httpError.js';
 import { db } from '../db/knex.js';
 import * as webhooks from '../services/webhook.service.js';
 import * as comments from '../services/comment.service.js';
+import { retryFailedActions } from '../services/automation.service.js';
 
 const router = Router();
 // Scoped to these paths so unknown /api URLs still return 404, not 401.
@@ -59,6 +60,12 @@ router.get(
     res.json({ ...list, stats });
   },
 );
+
+router.post('/comments/:id/retry', validate({ params: idParams }), async (req, res) => {
+  const retried = await retryFailedActions(req.params.id);
+  if (retried === null) throw notFound('Comment not found');
+  res.json({ retried });
+});
 
 router.get(
   '/logs',

@@ -94,3 +94,26 @@ export function timeAgo(value) {
   if (diff < 7 * 86400) return `${Math.floor(diff / 86400)}d ago`;
   return new Date(value).toLocaleDateString();
 }
+
+export function Toggle({ checked, onChange, label, disabled }) {
+  return (
+    <button
+      type="button"
+      role="switch"
+      aria-checked={checked}
+      aria-label={label}
+      disabled={disabled}
+      onClick={() => onChange(!checked)}
+      className={`relative inline-flex h-6 w-11 shrink-0 items-center rounded-full transition focus:outline-none focus-visible:ring-4 focus-visible:ring-brand-500/25 disabled:opacity-50 ${
+        checked ? 'bg-gradient-to-r from-violet-brand via-brand-500 to-accent-500' : 'bg-slate-300'
+      }`}
+    >
+      <span className={`inline-block h-5 w-5 transform rounded-full bg-white shadow transition ${checked ? 'translate-x-5' : 'translate-x-0.5'}`} />
+    </button>
+  );
+}
+
+export function FieldError({ children }) {
+  if (!children) return null;
+  return <p className="mt-1.5 text-xs font-medium text-red-600">{children}</p>;
+}

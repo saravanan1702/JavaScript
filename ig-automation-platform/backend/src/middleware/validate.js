@@ -12,7 +12,7 @@ export function validate(schemas) {
       const result = schemas[part].safeParse(req[part] ?? {});
       if (!result.success) {
         const details = result.error.issues.map((i) => ({ field: i.path.join('.'), message: i.message }));
-        return next(badRequest('Validation failed', details));
+        return next(badRequest(details.length === 1 ? details[0].message : 'Validation failed', details));
       }
       // Express 5 makes req.query a getter, so define it rather than assign.
       Object.defineProperty(req, part, { value: result.data, writable: true, configurable: true });

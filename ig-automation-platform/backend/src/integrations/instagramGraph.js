@@ -207,6 +207,36 @@ export async function listMediaPage(accessToken, { limit = 50, after } = {}) {
   };
 }
 
+// ─────────────────────────── Replies & messages ───────────────────────────
+
+/** Public reply under a comment. Returns the new comment's ID. */
+export async function replyToComment(accessToken, igCommentId, message) {
+  const body = await graphPost(`${encodeURIComponent(igCommentId)}/replies`, accessToken, { message });
+  return body.id ? String(body.id) : null;
+}
+
+/**
+ * Private reply: a DM to the person who wrote the comment, addressed by comment ID.
+ * Meta allows ONE private reply per comment, within 7 days of the comment. The user's
+ * IGSID comes back as recipient_id — we keep it so later conversation messages can use it.
+ */
+export async function sendPrivateReply(accessToken, igCommentId, text) {
+  const body = await graphPost('me/messages', accessToken, {
+    recipient: { comment_id: String(igCommentId) },
+    message: { text },
+  });
+  return { recipientId: body.recipient_id ? String(body.recipient_id) : null, messageId: body.message_id ?? null };
+}
+
+/** Normal DM to a user (IGSID). Only allowed inside Meta's messaging window (Phase 5). */
+export async function sendDirectMessage(accessToken, igsid, text) {
+  const body = await graphPost('me/messages', accessToken, {
+    recipient: { id: String(igsid) },
+    message: { text },
+  });
+  return { recipientId: body.recipient_id ? String(body.recipient_id) : null, messageId: body.message_id ?? null };
+}
+
 // ─────────────────────────── Webhook subscription ───────────────────────────
 
 export const WEBHOOK_FIELDS = ['comments', 'messages'];

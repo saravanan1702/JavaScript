@@ -18,8 +18,8 @@ model, schema and prerequisites.
 | 1 | Architecture, folder structure, full DB schema, admin auth, dashboard shell | ✅ Done |
 | 2 | Meta Developer App setup + Instagram account connection (OAuth) | ✅ Done ([setup guide](docs/PHASE-2-META-SETUP.md)) |
 | 3 | Webhooks + comment detection | ✅ Done ([setup guide](docs/PHASE-3-WEBHOOKS.md)) |
-| 4 | Public comment replies + private DMs | ⏳ Next |
-| 5 | Claude AI chatbot + knowledge base | |
+| 4 | Public comment replies + private DMs | ✅ Done ([guide](docs/PHASE-4-REPLIES-AND-DMS.md)) |
+| 5 | Claude AI chatbot + knowledge base | ⏳ Next |
 | 6 | Admin dashboard + settings | |
 | 7 | Customer inbox + analytics | |
 | 8 | Deployment + 24/7 operation | |
@@ -83,7 +83,9 @@ token encryption, login and sessions, security headers, the Instagram OAuth flow
 checks, expired and forged callbacks, cancel, partial permissions), token exchange and refresh,
 Graph API error mapping, media paging, webhook verification and signatures (forged, tampered,
 missing), event parsing and dedupe identities, keyword matching (emoji, Tamil, Hindi, plurals,
-exact mode), and the comment rules (own comments, automation switch, thread replies, repeat commenters).
+exact mode), the comment rules (own comments, automation switch, thread replies, repeat commenters),
+campaign validation and overlap warnings, reply templates and variants, the 7-day private-reply
+window, Graph error classification (retry vs. not allowed), and comment status roll-up.
 
 ---
 

@@ -10,6 +10,7 @@ export const DEFAULT_SETTINGS = Object.freeze({
   reply_delay_max_seconds: 90,
   one_automation_per_user_per_media: true,
   reply_to_comment_replies: false,
+  max_actions_per_hour: 120, // safety cap on public replies + DMs per account per hour
 });
 
 const CACHE_MS = 10_000;

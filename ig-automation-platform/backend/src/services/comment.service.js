@@ -11,6 +11,8 @@ export const SKIP_REASONS = {
   reply_to_comment: 'Reply inside a comment thread (ignored by setting)',
   duplicate_commenter: 'This person was already handled on this Reel',
   account_inactive: 'Instagram account needs reconnecting',
+  campaign_paused: 'Campaign was paused or deleted before replying',
+  dm_disabled: 'Automatic DMs are turned off',
 };
 
 /** entry.time is epoch seconds; tolerate milliseconds and junk by falling back to "now". */
@@ -88,7 +90,8 @@ export function decide({ comment, account, settings, campaigns, alreadyHandled }
 /** Full pipeline for one comment webhook. Returns the decision (for logging/tests). */
 export async function handleCommentEvent(account, value, entryTime, { afterMatch } = {}) {
   const { comment, duplicate } = await recordComment(account, value, entryTime);
-  if (duplicate && comment.status !== 'received') return { status: 'duplicate', commentId: comment.id };
+  // Re-run if a previous attempt stopped before actions were queued ('received'/'matched'); job dedupe keys make it safe.
+  if (duplicate && !['received', 'matched'].includes(comment.status)) return { status: 'duplicate', commentId: comment.id };
 
   const [settings, campaigns] = await Promise.all([getSettings(), campaignsForMedia(account.id, comment.ig_media_id)]);
 

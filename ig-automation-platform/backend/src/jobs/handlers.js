@@ -5,9 +5,11 @@
 import { db } from '../db/knex.js';
 import { handleCommentEvent } from '../services/comment.service.js';
 import { logActivity } from '../services/activityLog.service.js';
+import { scheduleActions, handleReplyComment, handlePrivateReply, markActionFailed } from '../services/automation.service.js';
 
-/** Throw this for errors that retrying can't fix (bad data, unknown type) → no retries. */
-export class PermanentError extends Error {}
+import { PermanentError, DeferError } from './errors.js';
+
+export { PermanentError, DeferError };
 
 async function markEvent(id, status, extra = {}) {
   await db('webhook_events')
@@ -33,7 +35,7 @@ async function processWebhookEvent({ eventId }) {
 
     switch (event.field) {
       case 'comments': {
-        const result = await handleCommentEvent(account, payload.value, payload.time);
+        const result = await handleCommentEvent(account, payload.value, payload.time, { afterMatch: scheduleActions });
         await markEvent(eventId, 'processed', { error: null, account_id: account.id });
         if (result.status === 'matched') {
           await logActivity({
@@ -59,9 +61,12 @@ async function processWebhookEvent({ eventId }) {
 
 export const handlers = {
   process_webhook_event: processWebhookEvent,
+  reply_comment: handleReplyComment,
+  private_reply: handlePrivateReply,
 
   /** Called by the worker when a job has exhausted its retries. */
   async onFinalFailure(job, err) {
+    if (job.type === 'reply_comment' || job.type === 'private_reply') await markActionFailed(job, err);
     if (job.type === 'process_webhook_event' && job.payload?.eventId) {
       await db('webhook_events').where({ id: job.payload.eventId }).update({ status: 'failed', error: String(err.message).slice(0, 2000) });
     }

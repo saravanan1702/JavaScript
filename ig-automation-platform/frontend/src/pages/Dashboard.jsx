@@ -8,7 +8,7 @@ const ROADMAP = [
   { phase: 1, title: 'Architecture, database & admin login', done: true },
   { phase: 2, title: 'Meta app setup & Instagram account connection', done: true },
   { phase: 3, title: 'Webhooks & comment detection', done: true },
-  { phase: 4, title: 'Public comment replies & private DMs' },
+  { phase: 4, title: 'Public comment replies & private DMs', done: true },
   { phase: 5, title: 'Claude AI chatbot & knowledge base' },
   { phase: 6, title: 'Admin dashboard & settings' },
   { phase: 7, title: 'Customer inbox & analytics' },

@@ -1,8 +1,8 @@
 // Background worker: polls the jobs table and runs handlers with limited concurrency.
 // Runs inside the API process (simple to deploy); can be split into its own process later.
 import { logger } from '../config/logger.js';
-import { claimJobs, completeJob, failJob, releaseStaleJobs, purgeOldJobs } from './queue.js';
-import { handlers, PermanentError } from './handlers.js';
+import { claimJobs, completeJob, failJob, deferJob, releaseStaleJobs, purgeOldJobs } from './queue.js';
+import { handlers, PermanentError, DeferError } from './handlers.js';
 
 const POLL_MS = 1000;
 const CONCURRENCY = 4;
@@ -22,6 +22,11 @@ export function startWorker({ pollMs = POLL_MS, concurrency = CONCURRENCY } = {}
       await handler(job.payload, job);
       await completeJob(job.id);
     } catch (err) {
+      if (err instanceof DeferError) {
+        await deferJob(job, err.runAt, err.message);
+        logger.info({ jobId: job.id, type: job.type, runAt: err.runAt }, `Job deferred: ${err.message}`);
+        return;
+      }
       const outcome = await failJob(job, err, { retryable: !(err instanceof PermanentError) });
       logger[outcome === 'failed' ? 'error' : 'warn'](
         { jobId: job.id, type: job.type, attempt: job.attempts, err: err.message },

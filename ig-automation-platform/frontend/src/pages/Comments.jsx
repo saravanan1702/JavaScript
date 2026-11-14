@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from 'react';
-import { Film, LoaderCircle, MessageSquareText, Search } from 'lucide-react';
+import { Film, LoaderCircle, MessageSquareText, RotateCcw, Search } from 'lucide-react';
 import { api } from '../api/client.js';
 import { Badge, EmptyState, FilterTabs, PageHeader, Pagination, timeAgo } from '../components/ui.jsx';
 
@@ -7,14 +7,30 @@ const STATUS = {
   received: { label: 'Processing', tone: 'blue' },
   matched: { label: 'Matched', tone: 'violet' },
   queued: { label: 'Queued', tone: 'blue' },
-  completed: { label: 'Replied', tone: 'green' },
+  completed: { label: 'Done', tone: 'green' },
   partial: { label: 'Partly sent', tone: 'amber' },
   failed: { label: 'Failed', tone: 'red' },
   no_match: { label: 'No keyword', tone: 'slate' },
   skipped: { label: 'Skipped', tone: 'amber' },
 };
 
-const TABS = ['', 'matched', 'no_match', 'skipped', 'failed'];
+const TABS = ['', 'completed', 'queued', 'partial', 'failed', 'no_match', 'skipped'];
+
+const ACTION = {
+  public: { pending: ['Reply scheduled', 'blue'], sent: ['Replied ✓', 'green'], failed: ['Reply failed', 'red'] },
+  private: { pending: ['DM scheduled', 'blue'], sent: ['DM sent ✓', 'green'], failed: ['DM failed', 'red'], ineligible: ['DM not allowed', 'amber'] },
+};
+
+function ActionBadges({ c }) {
+  const pub = ACTION.public[c.publicReplyStatus];
+  const dm = ACTION.private[c.privateReplyStatus];
+  return (
+    <>
+      {pub && <Badge tone={pub[1]}>{pub[0]}</Badge>}
+      {dm && <Badge tone={dm[1]}>{dm[0]}</Badge>}
+    </>
+  );
+}
 
 function Thumb({ media }) {
   const [broken, setBroken] = useState(false);
@@ -42,6 +58,19 @@ export default function Comments() {
   const [page, setPage] = useState(1);
   const [data, setData] = useState(null);
   const [error, setError] = useState('');
+  const [retrying, setRetrying] = useState(null);
+
+  async function retry(id) {
+    setRetrying(id);
+    try {
+      await api.post(`/comments/${id}/retry`);
+      await load();
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setRetrying(null);
+    }
+  }
 
   const load = useCallback(async () => {
     const params = new URLSearchParams({ page: String(page), pageSize: '25' });
@@ -108,11 +137,22 @@ export default function Comments() {
                     <p className="mt-0.5 break-words text-sm text-slate-700">{c.text || <em className="text-slate-400">(no text)</em>}</p>
                     <div className="mt-2 flex flex-wrap items-center gap-1.5">
                       <Badge tone={s.tone}>{s.label}</Badge>
+                      <ActionBadges c={c} />
                       {c.matchedKeyword && <Badge tone="violet">“{c.matchedKeyword}”</Badge>}
                       {c.campaignName && <span className="text-xs text-slate-500">→ {c.campaignName}</span>}
                       {c.skipReasonText && <span className="text-xs text-slate-500">{c.skipReasonText}</span>}
                       {c.lastError && <span className="text-xs text-red-600">{c.lastError}</span>}
                     </div>
+                    {(c.publicReplyStatus === 'failed' || c.privateReplyStatus === 'failed') && (
+                      <button
+                        type="button"
+                        onClick={() => retry(c.id)}
+                        disabled={retrying === c.id}
+                        className="mt-2 inline-flex items-center gap-1.5 rounded-lg border border-slate-200 px-2.5 py-1 text-xs font-medium text-slate-700 hover:bg-slate-50 disabled:opacity-50"
+                      >
+                        <RotateCcw className={`h-3.5 w-3.5 ${retrying === c.id ? 'animate-spin' : ''}`} /> Try again
+                      </button>
+                    )}
                   </div>
                 </li>
               );
