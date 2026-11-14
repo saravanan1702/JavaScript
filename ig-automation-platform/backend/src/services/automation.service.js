@@ -14,6 +14,9 @@ import * as ig from '../integrations/instagramGraph.js';
 import { getSettings } from './settings.service.js';
 import { getAccessToken, handleGraphError } from './instagramAccount.service.js';
 import { logActivity } from './activityLog.service.js';
+import { getProduct, formatPrice } from './knowledge.service.js';
+import { generatePrivateReply, isConfigured as aiConfigured } from './ai.service.js';
+import { AiError } from '../integrations/claude.js';
 
 export const PRIVATE_REPLY_WINDOW_MS = 7 * 24 * 60 * 60 * 1000; // Meta: private reply within 7 days of the comment
 const DM_GAP_MS = { min: 3_000, max: 8_000 }; // DM shortly after the public reply
@@ -71,6 +74,16 @@ export function overallStatus(publicStatus, privateStatus) {
   if (sent === intended.length) return 'completed';
   if (sent > 0) return 'partial';
   return 'failed';
+}
+
+/** Placeholders available in replies and DMs: {{username}}, {{product_name}}, {{price}}. */
+async function templateVars(comment, campaign) {
+  const product = await getProduct(campaign?.product_id);
+  return {
+    username: comment.commenter_username,
+    product_name: product?.name,
+    price: product ? formatPrice(product.price, product.currency) : null,
+  };
 }
 
 // ─────────────────────────── scheduling ───────────────────────────
@@ -168,7 +181,7 @@ export async function handleReplyComment({ commentId }) {
     .orderBy('public_replied_at', 'desc')
     .first('public_reply_text');
   const variant = pickVariant(parseJsonArray(campaign.public_replies), last?.public_reply_text);
-  const message = renderTemplate(variant, { username: comment.commenter_username });
+  const message = renderTemplate(variant, await templateVars(comment, campaign));
   if (!message) {
     await finish(commentId, { public_reply_status: 'none' });
     return;
@@ -204,7 +217,21 @@ export async function handlePrivateReply({ commentId }) {
   }
   await enforceHourlyCap(account.id, settings.max_actions_per_hour);
 
-  const text = renderTemplate(campaign.dm_message, { username: comment.commenter_username });
+  let text = renderTemplate(campaign.dm_message, await templateVars(comment, campaign));
+  let aiMeta = null;
+  if (campaign.use_ai_for_dm && aiConfigured()) {
+    // "Let AI write the DM": a personal answer to what they asked. The template is the safety net.
+    try {
+      const ai = await generatePrivateReply({ comment, campaign });
+      if (ai.reply && !ai.meta?.refusalCategory) {
+        text = ai.reply;
+        aiMeta = { ...ai.meta, intent: ai.intent, needsHuman: ai.needsHuman, handoffReason: ai.handoffReason };
+      }
+    } catch (err) {
+      if (err instanceof AiError && err.retryable) throw err;
+      await logActivity({ level: 'warn', scope: 'ai', message: `AI DM failed, used the template instead: ${err.message}`, context: { commentId } });
+    }
+  }
   if (!text) {
     await finish(commentId, { private_reply_status: 'none' });
     return;
@@ -214,14 +241,14 @@ export async function handlePrivateReply({ commentId }) {
     const token = await getAccessToken(account.id);
     const { recipientId, messageId } = await ig.sendPrivateReply(token, comment.ig_comment_id, text);
     await finish(commentId, { private_reply_status: 'sent', private_replied_at: new Date() }, { clearError: 'Private reply' });
-    await recordOutboundDm({ account, comment, recipientId, messageId, text });
+    await recordOutboundDm({ account, comment, recipientId, messageId, text, aiMeta });
   } catch (err) {
     await onActionError(ctx, err, 'private_reply_status', 'Private reply');
   }
 }
 
 /** Saves the DM into the inbox (contacts + messages) so the conversation continues there (Phase 5/7). */
-async function recordOutboundDm({ account, comment, recipientId, messageId, text }) {
+async function recordOutboundDm({ account, comment, recipientId, messageId, text, aiMeta }) {
   if (!recipientId) return;
   const now = new Date();
   await db('contacts')
@@ -238,6 +265,7 @@ async function recordOutboundDm({ account, comment, recipientId, messageId, text
       text,
       status: 'sent',
       comment_id: comment.id,
+      ai_meta: aiMeta ? JSON.stringify(aiMeta) : null,
     })
     .onConflict('ig_message_id')
     .ignore();

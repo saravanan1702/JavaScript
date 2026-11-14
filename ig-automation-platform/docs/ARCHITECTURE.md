@@ -199,7 +199,7 @@ ig-automation-platform/
 │   │   ├── controllers/       ← HTTP layer: parse request → call service → respond
 │   │   ├── services/          ← business logic (auth; later meta, automation, ai, …)
 │   │   ├── utils/             ← crypto (AES-GCM, HMAC helpers), HttpError
-│   │   ├── integrations/      ← instagramGraph.js (Phase 2); claude.js (Phase 5)
+│   │   ├── integrations/      ← instagramGraph.js (Meta), claude.js (Anthropic SDK)
 │   │   └── jobs/              ← tokenRefresher.js, queue.js (MySQL queue), worker.js, handlers.js
 │   └── tests/                 ← Vitest + Supertest
 └── frontend/                  ← React dashboard

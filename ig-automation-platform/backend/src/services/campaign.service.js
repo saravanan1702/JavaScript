@@ -79,7 +79,12 @@ async function writeChildren(trx, campaignId, input) {
   if (media.length) await trx('campaign_media').insert(media.map((id) => ({ campaign_id: campaignId, ig_media_id: id })));
 }
 
+async function assertProduct(productId) {
+  if (productId && !(await db('products').where({ id: productId }).first('id'))) throw badRequest('That product no longer exists');
+}
+
 export async function createCampaign(input) {
+  await assertProduct(input.productId);
   const accountId = await resolveAccountId(input.accountId);
   const id = await db.transaction(async (trx) => {
     const [newId] = await trx('campaigns').insert(toRow(input, accountId));
@@ -93,6 +98,7 @@ export async function createCampaign(input) {
 export async function updateCampaign(id, input) {
   const existing = await db('campaigns').where({ id }).first();
   if (!existing) throw notFound('Campaign not found');
+  await assertProduct(input.productId);
   const accountId = await resolveAccountId(input.accountId ?? existing.account_id);
   await db.transaction(async (trx) => {
     await trx('campaigns').where({ id }).update({ ...toRow(input, accountId), updated_at: new Date() });

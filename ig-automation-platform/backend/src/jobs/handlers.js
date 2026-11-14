@@ -6,6 +6,7 @@ import { db } from '../db/knex.js';
 import { handleCommentEvent } from '../services/comment.service.js';
 import { logActivity } from '../services/activityLog.service.js';
 import { scheduleActions, handleReplyComment, handlePrivateReply, markActionFailed } from '../services/automation.service.js';
+import { handleMessagingEvent, handleAiReply } from '../services/conversation.service.js';
 
 import { PermanentError, DeferError } from './errors.js';
 
@@ -22,8 +23,16 @@ async function processWebhookEvent({ eventId }) {
   if (!event) throw new PermanentError(`Webhook event ${eventId} not found`);
   if (event.status === 'processed' || event.status === 'ignored') return; // already done (idempotent)
 
-  await db('webhook_events').where({ id: eventId }).update({ status: 'processing', attempts: db.raw('attempts + 1') });
   const payload = typeof event.payload === 'string' ? JSON.parse(event.payload) : event.payload;
+
+  // Echoes of messages WE send can arrive before our own send call has returned and been saved.
+  // Waiting a few seconds lets us recognise them, instead of mistaking them for a manual reply.
+  const ECHO_WAIT_MS = 15_000;
+  if (event.field === 'messages' && payload.messaging?.message?.is_echo && Date.now() - new Date(event.received_at).getTime() < ECHO_WAIT_MS) {
+    throw new DeferError('Waiting briefly before processing message echo', new Date(new Date(event.received_at).getTime() + ECHO_WAIT_MS));
+  }
+
+  await db('webhook_events').where({ id: eventId }).update({ status: 'processing', attempts: db.raw('attempts + 1') });
 
   try {
     const account = payload.entryId ? await db('instagram_accounts').where({ ig_user_id: payload.entryId }).first() : null;
@@ -46,10 +55,11 @@ async function processWebhookEvent({ eventId }) {
         }
         return;
       }
-      case 'messages':
-        // Stored for history; conversation handling arrives in Phase 5.
-        await markEvent(eventId, 'ignored', { error: null, account_id: account.id });
+      case 'messages': {
+        const outcome = await handleMessagingEvent(account, payload.messaging);
+        await markEvent(eventId, outcome === 'ignored' ? 'ignored' : 'processed', { error: null, account_id: account.id });
         return;
+      }
       default:
         await markEvent(eventId, 'ignored', { error: null, account_id: account.id });
     }
@@ -63,6 +73,7 @@ export const handlers = {
   process_webhook_event: processWebhookEvent,
   reply_comment: handleReplyComment,
   private_reply: handlePrivateReply,
+  ai_reply: handleAiReply,
 
   /** Called by the worker when a job has exhausted its retries. */
   async onFinalFailure(job, err) {

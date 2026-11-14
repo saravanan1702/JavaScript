@@ -19,8 +19,8 @@ model, schema and prerequisites.
 | 2 | Meta Developer App setup + Instagram account connection (OAuth) | ✅ Done ([setup guide](docs/PHASE-2-META-SETUP.md)) |
 | 3 | Webhooks + comment detection | ✅ Done ([setup guide](docs/PHASE-3-WEBHOOKS.md)) |
 | 4 | Public comment replies + private DMs | ✅ Done ([guide](docs/PHASE-4-REPLIES-AND-DMS.md)) |
-| 5 | Claude AI chatbot + knowledge base | ⏳ Next |
-| 6 | Admin dashboard + settings | |
+| 5 | Claude AI chatbot + knowledge base | ✅ Done ([guide](docs/PHASE-5-AI-CHATBOT.md)) |
+| 6 | Admin dashboard + settings | ⏳ Next |
 | 7 | Customer inbox + analytics | |
 | 8 | Deployment + 24/7 operation | |
 
@@ -85,7 +85,10 @@ Graph API error mapping, media paging, webhook verification and signatures (forg
 missing), event parsing and dedupe identities, keyword matching (emoji, Tamil, Hindi, plurals,
 exact mode), the comment rules (own comments, automation switch, thread replies, repeat commenters),
 campaign validation and overlap warnings, reply templates and variants, the 7-day private-reply
-window, Graph error classification (retry vs. not allowed), and comment status roll-up.
+window, Graph error classification (retry vs. not allowed), comment status roll-up, the knowledge-base
+rendering (no invented prices, stable for caching), conversation building, reply sanitising, AI
+eligibility and the 24-hour window, and the Claude request (cached system prompt, structured output,
+effort, refusal fallback, error mapping).
 
 ---
 
@@ -106,7 +109,7 @@ window, Graph error classification (retry vs. not allowed), and comment status r
 | `META_WEBHOOK_VERIFY_TOKEN` | Phase 3 | Random string you also enter in the Meta webhook settings |
 | `META_APP_SECRET` | optional | Meta App secret; webhook signatures are accepted if they match this or the Instagram app secret |
 | `META_GRAPH_API_VERSION` | | Default `v26.0`; use the latest in Meta's changelog |
-| `ANTHROPIC_API_KEY` | Phase 5 | Claude API key |
+| `ANTHROPIC_API_KEY` | Phase 5 | Claude API key (server-side only, never in the frontend) |
 | `ANTHROPIC_MODEL` | | Default `claude-opus-5-5` |
 
 The server **refuses to start** if a required variable is missing or malformed, and prints exactly which one.

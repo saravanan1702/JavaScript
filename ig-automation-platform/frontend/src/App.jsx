@@ -9,6 +9,7 @@ import Comments from './pages/Comments.jsx';
 import Logs from './pages/Logs.jsx';
 import Campaigns from './pages/Campaigns.jsx';
 import CampaignEditor from './pages/CampaignEditor.jsx';
+import Knowledge from './pages/Knowledge.jsx';
 
 export default function App() {
   return (
@@ -22,7 +23,7 @@ export default function App() {
           <Route path="campaigns/new" element={<CampaignEditor />} />
           <Route path="campaigns/:id" element={<CampaignEditor />} />
           <Route path="inbox" element={<ComingSoon title="Inbox" phase={7} />} />
-          <Route path="knowledge" element={<ComingSoon title="Knowledge Base" phase={5} />} />
+          <Route path="knowledge" element={<Knowledge />} />
           <Route path="analytics" element={<ComingSoon title="Analytics" phase={7} />} />
           <Route path="logs" element={<Logs />} />
           <Route path="settings" element={<Settings />} />

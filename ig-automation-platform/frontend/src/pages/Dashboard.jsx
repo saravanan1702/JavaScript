@@ -9,7 +9,7 @@ const ROADMAP = [
   { phase: 2, title: 'Meta app setup & Instagram account connection', done: true },
   { phase: 3, title: 'Webhooks & comment detection', done: true },
   { phase: 4, title: 'Public comment replies & private DMs', done: true },
-  { phase: 5, title: 'Claude AI chatbot & knowledge base' },
+  { phase: 5, title: 'Claude AI chatbot & knowledge base', done: true },
   { phase: 6, title: 'Admin dashboard & settings' },
   { phase: 7, title: 'Customer inbox & analytics' },
   { phase: 8, title: 'Deployment & 24/7 operation' },

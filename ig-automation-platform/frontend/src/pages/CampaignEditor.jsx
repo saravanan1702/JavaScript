@@ -17,6 +17,8 @@ const EMPTY = {
   sendDm: true,
   dmMessage: 'Hi {{username}}! ❤️ Thanks for your interest. Here are the product details and price. Let us know if you need help placing an order.',
   productInfo: '',
+  productId: null,
+  useAiForDm: false,
   priority: 0,
   isActive: true,
 };
@@ -135,10 +137,14 @@ function KeywordInput({ keywords, onChange }) {
   );
 }
 
-function Preview({ form, reels, accountName }) {
+function Preview({ form, reels, accountName, product }) {
   const reel = reels.find((r) => form.mediaIds.includes(r.igMediaId));
   const sample = 'priya_styles';
-  const fill = (t) => (t || '').replace(/\{\{\s*username\s*\}\}/g, sample);
+  const fill = (t) =>
+    (t || '')
+      .replace(/\{\{\s*username\s*\}\}/g, sample)
+      .replace(/\{\{\s*product_name\s*\}\}/g, product?.name ?? '')
+      .replace(/\{\{\s*price\s*\}\}/g, product?.price != null ? `₹${Number(product.price).toLocaleString('en-IN')}` : '');
   const reply = form.publicReplies.find((r) => r.trim());
   return (
     <div className="mx-auto w-full max-w-[300px] rounded-[2rem] border-[10px] border-ink-900 bg-white shadow-2xl">
@@ -162,7 +168,11 @@ function Preview({ form, reels, accountName }) {
           <p className="mb-2 flex items-center gap-1 text-[10px] font-semibold uppercase tracking-wide text-slate-400">
             <Send className="h-3 w-3" /> Direct message
           </p>
-          {form.sendDm && form.dmMessage.trim() ? (
+          {form.sendDm && form.useAiForDm ? (
+            <p className="ml-auto w-fit max-w-[90%] rounded-2xl rounded-br-md bg-gradient-to-r from-violet-brand to-brand-500 px-3 py-2 text-[12px] italic text-white">
+              ✨ The AI writes a personal reply to what they asked, using your knowledge base. Your message below is the backup.
+            </p>
+          ) : form.sendDm && form.dmMessage.trim() ? (
             <p className="ml-auto w-fit max-w-[90%] whitespace-pre-wrap rounded-2xl rounded-br-md bg-gradient-to-r from-violet-brand to-brand-500 px-3 py-2 text-[12px] text-white">
               {fill(form.dmMessage)}
             </p>
@@ -181,6 +191,8 @@ export default function CampaignEditor() {
   const navigate = useNavigate();
   const [form, setForm] = useState(EMPTY);
   const [reels, setReels] = useState([]);
+  const [products, setProducts] = useState([]);
+  const [aiConfigured, setAiConfigured] = useState(false);
   const [account, setAccount] = useState(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -190,7 +202,9 @@ export default function CampaignEditor() {
   useEffect(() => {
     (async () => {
       try {
-        const { accounts } = await api.get('/instagram/accounts');
+        const [{ accounts }, kb, aiStatus] = await Promise.all([api.get('/instagram/accounts'), api.get('/knowledge'), api.get('/ai/status')]);
+        setProducts(kb.products.filter((p) => p.isActive));
+        setAiConfigured(aiStatus.configured);
         const acc = accounts.find((a) => a.status !== 'disconnected');
         setAccount(acc ?? null);
         if (acc) setReels((await api.get(`/instagram/accounts/${acc.id}/media?limit=60`)).media);
@@ -206,6 +220,8 @@ export default function CampaignEditor() {
             sendDm: campaign.sendDm,
             dmMessage: campaign.dmMessage,
             productInfo: campaign.productInfo,
+            productId: campaign.productId ?? null,
+            useAiForDm: campaign.useAiForDm,
             priority: campaign.priority,
             isActive: campaign.isActive,
           });
@@ -350,7 +366,7 @@ export default function CampaignEditor() {
             </div>
           </Section>
 
-          <Section title="Public comment reply" hint="One variant is picked at random each time, so replies don’t look copy-pasted. Use {{username}} for the commenter’s name.">
+          <Section title="Public comment reply" hint="One variant is picked at random each time, so replies don’t look copy-pasted. Placeholders: {{username}}, and {{product_name}} / {{price}} when a product is linked below.">
             <div className="space-y-3">
               {form.publicReplies.map((r, i) => (
                 <div key={i} className="flex items-start gap-2">
@@ -393,6 +409,17 @@ export default function CampaignEditor() {
                     <Counter value={form.dmMessage} max={LIMITS.dm} />
                   </div>
                 </div>
+                <label className={`flex items-start gap-3 rounded-xl border border-slate-200 p-3 ${aiConfigured ? '' : 'opacity-60'}`}>
+                  <Toggle checked={form.useAiForDm} onChange={(v) => set({ useAiForDm: v })} disabled={!aiConfigured} label="Let AI write the DM" />
+                  <span>
+                    <span className="block text-sm font-medium text-slate-800">✨ Let AI write the DM</span>
+                    <span className="text-xs text-slate-500">
+                      {aiConfigured
+                        ? 'Claude answers what the person actually asked (price, COD, sizes…) from your knowledge base. If the AI is unavailable, the message above is sent instead.'
+                        : 'Add your Claude API key to enable this.'}
+                    </span>
+                  </span>
+                </label>
                 <div className="rounded-xl bg-sky-50 px-4 py-3 text-xs leading-relaxed text-sky-800">
                   <strong>Meta’s rules:</strong> one private reply per comment, only within 7 days of the comment. Some people can’t
                   receive it (privacy settings); those show as “DM not allowed” on the Comments page. You can message them again
@@ -402,14 +429,29 @@ export default function CampaignEditor() {
             )}
           </Section>
 
-          <Section title="Product information" hint="Notes about what this campaign sells. In Phase 5 the AI uses this, together with your knowledge base, to answer follow-up questions.">
-            <textarea value={form.productInfo} rows={4} onChange={(e) => set({ productInfo: e.target.value })} placeholder="Gold-plated bracelet, ₹499, free shipping above ₹999, COD available…" className="input resize-y" />
+          <Section title="Product" hint="Tell the AI what this Reel is selling so follow-up questions get the right answer.">
+            <div>
+              <label htmlFor="product" className="label">Linked product</label>
+              <select id="product" value={form.productId ?? ''} onChange={(e) => set({ productId: e.target.value ? Number(e.target.value) : null })} className="input">
+                <option value="">None</option>
+                {products.map((p) => (
+                  <option key={p.id} value={p.id}>{p.name}{p.price != null ? ` · ₹${Number(p.price).toLocaleString('en-IN')}` : ''}</option>
+                ))}
+              </select>
+              <p className="mt-1 text-xs text-slate-500">
+                {products.length ? 'The AI assumes “price?” on this Reel means this product.' : <>Add products in <Link to="/knowledge" className="font-medium text-brand-600">Knowledge Base</Link>.</>}
+              </p>
+            </div>
+            <div>
+              <label htmlFor="productInfo" className="label">Extra notes for this campaign</label>
+              <textarea id="productInfo" value={form.productInfo} rows={3} onChange={(e) => set({ productInfo: e.target.value })} placeholder="Festive offer: free gift box with every bracelet this week." className="input resize-y" />
+            </div>
           </Section>
         </div>
 
         <aside className="xl:sticky xl:top-8 xl:self-start">
           <p className="mb-3 text-center text-xs font-medium uppercase tracking-wide text-slate-400">Preview</p>
-          <Preview form={form} reels={reels} accountName={accountName} />
+          <Preview form={form} reels={reels} accountName={accountName} product={products.find((p) => p.id === Number(form.productId))} />
         </aside>
       </div>
     </form>
