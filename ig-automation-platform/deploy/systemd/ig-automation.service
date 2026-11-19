@@ -1,0 +1,54 @@
+# Runs the API + background worker 24/7. Installed by deploy/scripts/setup-server.sh to
+# /etc/systemd/system/ig-automation.service
+#   sudo systemctl status ig-automation     # is it running?
+#   sudo journalctl -u ig-automation -f      # live logs
+[Unit]
+Description=Reel Automation (Instagram comment & DM automation)
+After=network-online.target mysql.service
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=igauto
+Group=igauto
+# "current" is a symlink to the active release; a restart picks up a new release.
+WorkingDirectory=/opt/ig-automation/current/backend
+ExecStart=/usr/bin/node src/server.js
+Environment=NODE_ENV=production
+# The app reads the rest of its settings from backend/.env (→ /opt/ig-automation/shared/.env)
+
+# Always come back: crashes, out-of-memory kills, reboots.
+Restart=always
+RestartSec=5
+# Graceful shutdown: SIGTERM lets in-flight requests and jobs finish (server.js waits up to 10 s).
+KillSignal=SIGTERM
+TimeoutStopSec=20
+
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=ig-automation
+
+# ── Hardening: the app can read its code and talk to the network, nothing more ──
+NoNewPrivileges=true
+PrivateTmp=true
+PrivateDevices=true
+ProtectSystem=strict
+ProtectHome=true
+ProtectKernelTunables=true
+ProtectKernelModules=true
+ProtectControlGroups=true
+ProtectClock=true
+ProtectHostname=true
+RestrictAddressFamilies=AF_INET AF_INET6 AF_UNIX
+RestrictNamespaces=true
+RestrictRealtime=true
+RestrictSUIDSGID=true
+LockPersonality=true
+CapabilityBoundingSet=
+SystemCallArchitectures=native
+UMask=0077
+MemoryMax=700M
+LimitNOFILE=8192
+
+[Install]
+WantedBy=multi-user.target

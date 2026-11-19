@@ -3,15 +3,18 @@
 import { logger } from '../config/logger.js';
 import { claimJobs, completeJob, failJob, deferJob, releaseStaleJobs, purgeOldJobs } from './queue.js';
 import { handlers, PermanentError, DeferError } from './handlers.js';
+import { purgeOldData } from './maintenance.js';
 
 const POLL_MS = 1000;
 const CONCURRENCY = 4;
 const MAINTENANCE_MS = 60_000;
+const PURGE_MS = 60 * 60_000; // data retention check once an hour
 
 export function startWorker({ pollMs = POLL_MS, concurrency = CONCURRENCY } = {}) {
   let stopped = false;
   let running = 0;
   let lastMaintenance = 0;
+  let lastPurge = 0;
   let timer = null;
   const inFlight = new Set();
 
@@ -44,6 +47,10 @@ export function startWorker({ pollMs = POLL_MS, concurrency = CONCURRENCY } = {}
         const released = await releaseStaleJobs();
         if (released) logger.warn({ released }, 'Released stale jobs from a crashed worker');
         await purgeOldJobs();
+      }
+      if (Date.now() - lastPurge > PURGE_MS) {
+        lastPurge = Date.now();
+        await purgeOldData();
       }
 
       const free = concurrency - running;

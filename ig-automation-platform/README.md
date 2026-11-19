@@ -22,9 +22,20 @@ model, schema and prerequisites.
 | 5 | Claude AI chatbot + knowledge base | ✅ Done ([guide](docs/PHASE-5-AI-CHATBOT.md)) |
 | 6 | Admin dashboard + settings | ✅ Done ([guide](docs/PHASE-6-DASHBOARD.md)) |
 | 7 | Customer inbox + analytics | ✅ Done ([guide](docs/PHASE-7-INBOX-ANALYTICS.md)) |
-| 8 | Deployment + 24/7 operation | ⏳ Next |
+| 8 | Deployment + 24/7 operation | ✅ Done ([guide](docs/PHASE-8-DEPLOYMENT.md)) |
 
 ---
+
+## Production
+
+Deploy to your own Ubuntu 24.04 server (VPS or AWS EC2) with HTTPS, 24/7 auto-restart, daily
+backups and one-command updates with automatic rollback. See
+**[docs/PHASE-8-DEPLOYMENT.md](docs/PHASE-8-DEPLOYMENT.md)**.
+
+```bash
+sudo DOMAIN=automation.yourshop.in EMAIL=you@example.com REPO_URL=… bash deploy/scripts/setup-server.sh   # once
+sudo bash /opt/ig-automation/repo/ig-automation-platform/deploy/scripts/deploy.sh                       # every update
+```
 
 ## Phase 1: run it locally
 
@@ -112,6 +123,7 @@ effort, refusal fallback, error mapping).
 | `ANTHROPIC_API_KEY` | Phase 5 | Claude API key (server-side only, never in the frontend) |
 | `ANTHROPIC_MODEL` | | Default `claude-opus-5-5` |
 | `APP_TIMEZONE` | | Time zone for dashboard days (default `Asia/Kolkata`) |
+| `DATA_RETENTION_DAYS` | | Days to keep activity logs and raw webhook payloads (default 90) |
 
 The server **refuses to start** if a required variable is missing or malformed, and prints exactly which one.
 

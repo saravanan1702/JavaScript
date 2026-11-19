@@ -177,6 +177,10 @@ We never use browser automation, password logins, scraping or unofficial APIs.
 ig-automation-platform/
 ├── README.md                  ← setup & run instructions
 ├── docker-compose.yml         ← local MySQL 8 for development
+├── deploy/                    ← production (Phase 8)
+│   ├── scripts/               ← setup-server.sh, deploy.sh (rollback), backup-db.sh, restore-db.sh
+│   ├── systemd/               ← 24/7 service + daily backup timer
+│   └── nginx/                 ← HTTPS site + security headers
 ├── docs/
 │   └── ARCHITECTURE.md        ← this file
 ├── backend/                   ← Express API + worker

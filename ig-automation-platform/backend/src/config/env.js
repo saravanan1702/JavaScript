@@ -17,6 +17,8 @@ const schema = z.object({
   APP_BASE_URL: z.url().default('http://localhost:5173'),
   // Where the React dashboard is served from (CORS + post-OAuth redirect).
   FRONTEND_URL: z.url().default('http://localhost:5173'),
+  // How long to keep activity logs and raw webhook payloads (customer conversations are kept).
+  DATA_RETENTION_DAYS: z.coerce.number().int().min(7).max(3650).default(90),
   // Time zone for dashboard charts ("today", daily buckets).
   APP_TIMEZONE: z.string().default('Asia/Kolkata'),
   // Set to true when running behind Nginx so req.ip / secure cookies work.
@@ -58,7 +60,25 @@ const schema = z.object({
   ANTHROPIC_MODEL: z.string().default('claude-opus-5-5'),
 });
 
-const parsed = schema.safeParse(process.env);
+/**
+ * Extra rules that only apply in production, so a misconfigured server refuses to start
+ * instead of running insecurely. Exported for tests.
+ */
+export function productionProblems(cfg) {
+  if (cfg.NODE_ENV !== 'production') return [];
+  const problems = [];
+  for (const key of ['APP_BASE_URL', 'FRONTEND_URL']) {
+    if (!String(cfg[key]).startsWith('https://')) problems.push({ path: [key], message: 'must be an https:// URL in production (Meta and secure cookies require HTTPS)' });
+  }
+  if (/replace-with|change[-_]?me|example/i.test(cfg.JWT_SECRET)) problems.push({ path: ['JWT_SECRET'], message: 'still the example value; run npm run gen-secrets' });
+  if (!cfg.TRUST_PROXY) problems.push({ path: ['TRUST_PROXY'], message: 'must be true behind Nginx (correct client IPs for rate limiting)' });
+  if (cfg.DB_PASSWORD.length < 12) problems.push({ path: ['DB_PASSWORD'], message: 'use a strong database password (12+ characters) in production' });
+  return problems;
+}
+
+const parsedRaw = schema.safeParse(process.env);
+const prodIssues = parsedRaw.success ? productionProblems(parsedRaw.data) : [];
+const parsed = prodIssues.length ? { success: false, error: { issues: prodIssues } } : parsedRaw;
 
 if (!parsed.success) {
   const issues = parsed.error.issues

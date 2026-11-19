@@ -1,0 +1,18 @@
+# One database backup run (triggered daily by ig-automation-backup.timer).
+#   sudo systemctl start ig-automation-backup   # back up right now
+[Unit]
+Description=Reel Automation database backup
+After=mysql.service
+
+[Service]
+Type=oneshot
+User=igauto
+Group=igauto
+ExecStart=/opt/ig-automation/current/deploy/scripts/backup-db.sh
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=true
+# rclone (optional off-server copies) refreshes its login token in its config folder.
+ReadWritePaths=/opt/ig-automation/backups -/opt/ig-automation/.config/rclone -/opt/ig-automation/.cache/rclone
+UMask=0077
