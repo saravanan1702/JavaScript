@@ -1,4 +1,5 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
+import { api } from '../api/client.js';
 import { NavLink, Outlet } from 'react-router-dom';
 import {
   Activity, BookOpen, ChartColumn, Inbox, LayoutDashboard, LogOut, Megaphone, Menu, MessageSquareText, Settings, X,
@@ -30,8 +31,23 @@ function Brand() {
   );
 }
 
+/** Conversations needing a reply, shown as a badge on "Inbox". */
+function useInboxBadge() {
+  const [count, setCount] = useState(0);
+  useEffect(() => {
+    const load = () =>
+      document.visibilityState === 'visible' &&
+      api.get('/inbox/conversations?filter=needs_attention&pageSize=1').then((d) => setCount(d.counts.needsAttention)).catch(() => {});
+    load();
+    const t = setInterval(load, 30_000);
+    return () => clearInterval(t);
+  }, []);
+  return count;
+}
+
 function SidebarContent({ onNavigate }) {
   const { admin, logout } = useAuth();
+  const inboxBadge = useInboxBadge();
   return (
     <div className="flex h-full flex-col bg-ink-900 px-4 py-6">
       <Brand />
@@ -52,6 +68,11 @@ function SidebarContent({ onNavigate }) {
           >
             <Icon className="h-4.5 w-4.5" />
             {label}
+            {to === '/inbox' && inboxBadge > 0 && (
+              <span className="ml-auto inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-brand-500 px-1.5 text-[11px] font-semibold text-white" aria-label={`${inboxBadge} conversations need you`}>
+                {inboxBadge}
+              </span>
+            )}
           </NavLink>
         ))}
       </nav>

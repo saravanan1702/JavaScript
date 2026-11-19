@@ -3,13 +3,14 @@ import ProtectedRoute from './components/ProtectedRoute.jsx';
 import Layout from './components/Layout.jsx';
 import Login from './pages/Login.jsx';
 import Dashboard from './pages/Dashboard.jsx';
-import ComingSoon from './pages/ComingSoon.jsx';
 import Settings from './pages/Settings.jsx';
 import Comments from './pages/Comments.jsx';
 import Logs from './pages/Logs.jsx';
 import Campaigns from './pages/Campaigns.jsx';
 import CampaignEditor from './pages/CampaignEditor.jsx';
 import Knowledge from './pages/Knowledge.jsx';
+import Inbox from './pages/Inbox.jsx';
+import Analytics from './pages/Analytics.jsx';
 
 export default function App() {
   return (
@@ -22,9 +23,10 @@ export default function App() {
           <Route path="campaigns" element={<Campaigns />} />
           <Route path="campaigns/new" element={<CampaignEditor />} />
           <Route path="campaigns/:id" element={<CampaignEditor />} />
-          <Route path="inbox" element={<ComingSoon title="Inbox" phase={7} />} />
+          <Route path="inbox" element={<Inbox />} />
+          <Route path="inbox/:id" element={<Inbox />} />
           <Route path="knowledge" element={<Knowledge />} />
-          <Route path="analytics" element={<ComingSoon title="Analytics" phase={7} />} />
+          <Route path="analytics" element={<Analytics />} />
           <Route path="logs" element={<Logs />} />
           <Route path="settings" element={<Settings />} />
         </Route>

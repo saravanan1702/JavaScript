@@ -320,3 +320,72 @@ export function SegmentedBar({ parts }) {
     </div>
   );
 }
+
+// ───────────────────────── Heatmap (sequential, one hue) ─────────────────────────
+
+// Validated sequential blue ramp (light → dark). Empty cells use a neutral, not the ramp.
+const SEQ_RAMP = ['#cde2fb', '#9ec5f4', '#6da7ec', '#3987e5', '#256abf', '#184f95', '#0d366b'];
+const EMPTY_CELL = '#f1f0ec';
+
+export function Heatmap({ grid, rowLabels, colLabel = (c) => c, valueLabel = 'comments' }) {
+  const [hover, setHover] = useState(null);
+  const max = Math.max(0, ...grid.flat());
+  const color = (v) => (v <= 0 || max === 0 ? EMPTY_CELL : SEQ_RAMP[Math.min(SEQ_RAMP.length - 1, Math.floor((v / max) * SEQ_RAMP.length - 1e-9))]);
+  const cols = grid[0]?.length ?? 0;
+
+  return (
+    <div className="relative">
+      <div className="overflow-x-auto pb-1">
+        <div className="inline-grid min-w-full gap-[2px]" style={{ gridTemplateColumns: `40px repeat(${cols}, minmax(14px, 1fr))` }} role="img" aria-label={`Heatmap of ${valueLabel} by day and hour. Use the table view for exact numbers.`}>
+          <div />
+          {Array.from({ length: cols }, (_, c) => (
+            <div key={c} className="text-center text-[10px] text-[var(--chart-muted)]">{c % 3 === 0 ? colLabel(c) : ''}</div>
+          ))}
+          {grid.map((row, r) => (
+            <div key={rowLabels[r]} className="contents">
+              <div className="pr-1 text-right text-[11px] leading-[22px] text-[var(--chart-muted)]">{rowLabels[r]}</div>
+              {row.map((v, c) => (
+                <div
+                  key={c}
+                  tabIndex={0}
+                  onPointerEnter={() => setHover({ r, c, v })}
+                  onPointerLeave={() => setHover(null)}
+                  onFocus={() => setHover({ r, c, v })}
+                  onBlur={() => setHover(null)}
+                  aria-label={`${rowLabels[r]} ${colLabel(c)}: ${v} ${valueLabel}`}
+                  className="h-[22px] rounded-[3px] outline-none focus-visible:ring-2 focus-visible:ring-brand-500/60"
+                  style={{ background: color(v), outline: hover?.r === r && hover?.c === c ? '2px solid #0b0b0b' : undefined, outlineOffset: -1 }}
+                />
+              ))}
+            </div>
+          ))}
+        </div>
+      </div>
+      {hover && (
+        <div role="status" className="pointer-events-none absolute right-0 top-0 z-10 rounded-xl border border-slate-200 bg-white px-3 py-2 text-xs shadow-lg">
+          <span className="font-semibold tabular-nums text-slate-900">{fmt(hover.v)}</span>{' '}
+          <span className="text-slate-500">{valueLabel} · {rowLabels[hover.r]} {colLabel(hover.c)}</span>
+        </div>
+      )}
+      {/* Scale legend */}
+      <div className="mt-3 flex items-center gap-2 text-[11px] text-[var(--chart-muted)]">
+        <span>Fewer</span>
+        <span className="h-2.5 w-4 rounded-sm" style={{ background: EMPTY_CELL }} />
+        {SEQ_RAMP.map((c) => <span key={c} className="h-2.5 w-4 rounded-sm" style={{ background: c }} />)}
+        <span>More</span>
+      </div>
+    </div>
+  );
+}
+
+/** Thin meter (one ratio against 100%), same-hue track. */
+export function Meter({ value, label }) {
+  return (
+    <div className="flex items-center gap-2" aria-label={label ?? `${value}%`}>
+      <div className="h-1.5 w-16 rounded-full bg-[#cde2fb]">
+        <div className="h-1.5 rounded-full bg-[var(--chart-seq)]" style={{ width: `${Math.min(100, Math.max(0, value))}%` }} />
+      </div>
+      <span className="w-9 text-right text-xs tabular-nums text-slate-700">{value}%</span>
+    </div>
+  );
+}

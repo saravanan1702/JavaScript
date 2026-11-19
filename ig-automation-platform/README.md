@@ -21,8 +21,8 @@ model, schema and prerequisites.
 | 4 | Public comment replies + private DMs | ✅ Done ([guide](docs/PHASE-4-REPLIES-AND-DMS.md)) |
 | 5 | Claude AI chatbot + knowledge base | ✅ Done ([guide](docs/PHASE-5-AI-CHATBOT.md)) |
 | 6 | Admin dashboard + settings | ✅ Done ([guide](docs/PHASE-6-DASHBOARD.md)) |
-| 7 | Customer inbox + analytics | ⏳ Next |
-| 8 | Deployment + 24/7 operation | |
+| 7 | Customer inbox + analytics | ✅ Done ([guide](docs/PHASE-7-INBOX-ANALYTICS.md)) |
+| 8 | Deployment + 24/7 operation | ⏳ Next |
 
 ---
 

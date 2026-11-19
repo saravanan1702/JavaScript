@@ -42,6 +42,9 @@ async function seed() {
     campaigns.push({ id, ...def });
   }
   const weighted = campaigns.flatMap((c) => Array(c.weight).fill(c));
+  // Spread comments over the account's synced posts (popular ones get more), else one placeholder.
+  const media = (await db('media').where({ account_id: account.id }).orderBy('posted_at', 'desc').limit(6).pluck('ig_media_id'));
+  const mediaPool = media.length ? media.flatMap((m, i) => Array(Math.max(1, media.length - i) * 2).fill(m)) : ['demo_media'];
   const names = ['priya', 'kavya', 'anu', 'meena', 'divya', 'lakshmi', 'swathi', 'nisha', 'ramya', 'deepa', 'harini', 'sneha'];
   const now = Date.now();
   let comments = 0;
@@ -51,7 +54,10 @@ async function seed() {
     const growth = 1 + (29 - d) / 20; // activity grows over the month
     const count = Math.round(rand(6, 14) * growth * (d % 7 === 0 || d % 7 === 1 ? 1.4 : 1)); // weekend bump
     for (let i = 0; i < count; i += 1) {
-      const at = new Date(now - d * DAY - rand(0, 20 * 3600) * 1000);
+      // Customers comment mostly in the evening (7–11 PM IST), some at lunch, the rest spread out.
+      const istHour = Math.random() < 0.55 ? rand(19, 22) : Math.random() < 0.5 ? rand(12, 13) : rand(8, 22);
+      const day = new Date(now - d * DAY);
+      const at = new Date(Date.UTC(day.getUTCFullYear(), day.getUTCMonth(), day.getUTCDate(), istHour, rand(0, 59), rand(0, 59)) - 330 * 60_000); // IST → UTC
       if (at > new Date()) continue;
       const user = `${pick(names)}${rand(1, 999)}`;
       const matchedRoll = Math.random();
@@ -61,7 +67,7 @@ async function seed() {
       const [commentId] = await db('comments').insert({
         account_id: account.id,
         ig_comment_id: `demo_${crypto.randomBytes(6).toString('hex')}`,
-        ig_media_id: 'demo_media',
+        ig_media_id: pick(mediaPool),
         commenter_ig_id: `demo_u_${user}`,
         commenter_username: user,
         text: campaign ? `${pick(campaign.keywords)}?` : pick(['So pretty 😍', 'Love this!', '🔥🔥', 'Beautiful work']),
@@ -84,12 +90,13 @@ async function seed() {
         if (Math.random() < 0.45) {
           const replyAt = new Date(at.getTime() + rand(2, 60) * 60_000);
           if (replyAt < new Date()) {
-            await db('messages').insert({ contact_id: contactId, direction: 'inbound', source: 'customer', text: pick(['Is COD available?', 'Do you have it in silver?', 'How many days for delivery?']), status: 'received', created_at: replyAt });
+            const q = pick([['Is COD available?', 'cod'], ['Is COD available?', 'cod'], ['Do you have it in silver?', 'availability'], ['How many days for delivery?', 'shipping'], ['What is the price?', 'price'], ['What is the price?', 'price'], ['How do I order?', 'order']]);
+            await db('messages').insert({ contact_id: contactId, direction: 'inbound', source: 'customer', text: q[0], status: 'received', created_at: replyAt });
             const handoff = Math.random() < 0.15;
             await db('messages').insert({
               contact_id: contactId, direction: 'outbound', source: 'ai', status: 'sent', created_at: new Date(replyAt.getTime() + 10_000),
               text: handoff ? 'Let me check with the team 🙏' : 'Yes! COD is available in Tamil Nadu 😊',
-              ai_meta: JSON.stringify({ model: env.ANTHROPIC_MODEL, inputTokens: rand(1100, 1600), outputTokens: rand(40, 120), cacheReadTokens: rand(900, 1100), needsHuman: handoff }),
+              ai_meta: JSON.stringify({ model: env.ANTHROPIC_MODEL, inputTokens: rand(1100, 1600), outputTokens: rand(40, 120), cacheReadTokens: rand(900, 1100), needsHuman: handoff, intent: handoff ? 'complaint' : q[1] }),
             });
             await db('contacts').where({ id: contactId }).update({ last_inbound_at: replyAt, needs_attention: handoff, ai_paused: handoff, attention_reason: handoff ? 'Asked about a custom order' : null });
             dms += 1;
