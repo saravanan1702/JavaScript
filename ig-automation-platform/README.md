@@ -20,8 +20,8 @@ model, schema and prerequisites.
 | 3 | Webhooks + comment detection | ✅ Done ([setup guide](docs/PHASE-3-WEBHOOKS.md)) |
 | 4 | Public comment replies + private DMs | ✅ Done ([guide](docs/PHASE-4-REPLIES-AND-DMS.md)) |
 | 5 | Claude AI chatbot + knowledge base | ✅ Done ([guide](docs/PHASE-5-AI-CHATBOT.md)) |
-| 6 | Admin dashboard + settings | ⏳ Next |
-| 7 | Customer inbox + analytics | |
+| 6 | Admin dashboard + settings | ✅ Done ([guide](docs/PHASE-6-DASHBOARD.md)) |
+| 7 | Customer inbox + analytics | ⏳ Next |
 | 8 | Deployment + 24/7 operation | |
 
 ---
@@ -111,6 +111,7 @@ effort, refusal fallback, error mapping).
 | `META_GRAPH_API_VERSION` | | Default `v26.0`; use the latest in Meta's changelog |
 | `ANTHROPIC_API_KEY` | Phase 5 | Claude API key (server-side only, never in the frontend) |
 | `ANTHROPIC_MODEL` | | Default `claude-opus-5-5` |
+| `APP_TIMEZONE` | | Time zone for dashboard days (default `Asia/Kolkata`) |
 
 The server **refuses to start** if a required variable is missing or malformed, and prints exactly which one.
 
@@ -122,4 +123,5 @@ npm run migrate:rollback   # undo the last batch
 npm run create-admin       # add another admin
 npm run gen-secrets        # new random secrets
 npm run webhook:simulate -- "Price?"   # send a signed test comment to the local server
+npm run demo:seed          # 30 days of demo activity for the dashboard (npm run demo:clear removes it)
 ```

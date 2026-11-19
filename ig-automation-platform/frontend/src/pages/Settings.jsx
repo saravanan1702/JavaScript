@@ -1,9 +1,11 @@
 import { useCallback, useEffect, useState } from 'react';
-import { useSearchParams } from 'react-router-dom';
+import { Link, useSearchParams } from 'react-router-dom';
 import {
   CircleAlert, CircleCheck, Copy, ExternalLink, Film, KeyRound, LoaderCircle, MessageCircle, RefreshCw, Unplug, Link2, Webhook,
 } from 'lucide-react';
 import { api } from '../api/client.js';
+import { FilterTabs, PageHeader, Toggle } from '../components/ui.jsx';
+import SystemStatus from '../components/SystemStatus.jsx';
 
 const RESULT_MESSAGES = {
   connected: { tone: 'success', text: 'Instagram connected! Your Reels are being synced.' },
@@ -113,7 +115,7 @@ function ReelCard({ reel }) {
   );
 }
 
-export default function Settings() {
+function InstagramSettings() {
   const [params, setParams] = useSearchParams();
   const [status, setStatus] = useState(null);
   const [accounts, setAccounts] = useState([]);
@@ -195,11 +197,6 @@ export default function Settings() {
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-semibold text-slate-900">Settings</h1>
-        <p className="mt-1 text-sm text-slate-500">Instagram connection and webhooks.</p>
-      </div>
-
       {notice && <Banner tone={notice.tone} onClose={() => setNotice(null)}>{notice.text}</Banner>}
 
       <section className="card">
@@ -418,6 +415,195 @@ export default function Settings() {
           )}
         </section>
       )}
+    </div>
+  );
+}
+
+// ───────────────────────── Automation settings ─────────────────────────
+
+const SWITCHES = [
+  ['comment_automation_enabled', 'Comment automation', 'Reply publicly to comments that match a campaign keyword. Turn off to pause all campaigns at once.'],
+  ['dm_automation_enabled', 'Automatic DMs', 'Send the private reply (DM) after the public reply.'],
+  ['ai_chatbot_enabled', 'AI chatbot', 'Claude answers customers’ DMs from your knowledge base (needs ANTHROPIC_API_KEY).'],
+  ['one_automation_per_user_per_media', 'Duplicate comment protection', 'Reply to each person only once per Reel, even if they comment several times.'],
+  ['reply_to_comment_replies', 'Reply inside comment threads', 'Also react to replies under other comments. Off by default to avoid joining conversations.'],
+];
+
+function AutomationSettings() {
+  const [settings, setSettings] = useState(null);
+  const [draft, setDraft] = useState(null);
+  const [aiConfigured, setAiConfigured] = useState(true);
+  const [saving, setSaving] = useState(false);
+  const [msg, setMsg] = useState(null);
+
+  useEffect(() => {
+    Promise.all([api.get('/settings'), api.get('/ai/status')])
+      .then(([s, ai]) => {
+        setSettings(s.settings);
+        setDraft(s.settings);
+        setAiConfigured(ai.configured);
+      })
+      .catch((e) => setMsg({ ok: false, text: e.message }));
+  }, []);
+
+  async function toggle(key, value) {
+    setMsg(null);
+    try {
+      const { settings: s } = await api.patch('/settings', { [key]: value });
+      setSettings(s);
+      setDraft((d) => ({ ...d, [key]: s[key] }));
+    } catch (e) {
+      setMsg({ ok: false, text: e.message });
+    }
+  }
+
+  async function saveNumbers(e) {
+    e.preventDefault();
+    setSaving(true);
+    setMsg(null);
+    try {
+      const { settings: s } = await api.patch('/settings', {
+        reply_delay_min_seconds: Number(draft.reply_delay_min_seconds),
+        reply_delay_max_seconds: Number(draft.reply_delay_max_seconds),
+        max_actions_per_hour: Number(draft.max_actions_per_hour),
+      });
+      setSettings(s);
+      setDraft(s);
+      setMsg({ ok: true, text: 'Saved.' });
+    } catch (err) {
+      setMsg({ ok: false, text: err.message });
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  if (!draft) return msg ? <p className="text-sm text-red-600">{msg.text}</p> : <LoaderCircle className="h-6 w-6 animate-spin text-brand-500" />;
+  const numbersChanged = ['reply_delay_min_seconds', 'reply_delay_max_seconds', 'max_actions_per_hour'].some((k) => Number(draft[k]) !== settings[k]);
+
+  return (
+    <div className="space-y-6">
+      <section className="card divide-y divide-slate-100 p-0">
+        {SWITCHES.map(([key, label, hint]) => {
+          const disabled = key === 'ai_chatbot_enabled' && !aiConfigured;
+          return (
+            <div key={key} className="flex items-start justify-between gap-4 px-6 py-4">
+              <div>
+                <p className="text-sm font-medium text-slate-900">{label}</p>
+                <p className="mt-0.5 text-xs text-slate-500">{disabled ? 'Add ANTHROPIC_API_KEY to backend/.env first.' : hint}</p>
+              </div>
+              <Toggle checked={Boolean(settings[key])} onChange={(v) => toggle(key, v)} disabled={disabled} label={label} />
+            </div>
+          );
+        })}
+      </section>
+
+      <form onSubmit={saveNumbers} className="card space-y-5">
+        <div>
+          <h2 className="text-base font-semibold text-slate-900">Reply timing & safety</h2>
+          <p className="mt-0.5 text-sm text-slate-500">
+            A short random delay makes replies look human and keeps the account within Meta’s rate limits. Very fast or very frequent
+            replies can be treated as spam.
+          </p>
+        </div>
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+          <label className="block">
+            <span className="label">Minimum delay (seconds)</span>
+            <input type="number" min={0} max={3600} value={draft.reply_delay_min_seconds} onChange={(e) => setDraft({ ...draft, reply_delay_min_seconds: e.target.value })} className="input" />
+          </label>
+          <label className="block">
+            <span className="label">Maximum delay (seconds)</span>
+            <input type="number" min={0} max={3600} value={draft.reply_delay_max_seconds} onChange={(e) => setDraft({ ...draft, reply_delay_max_seconds: e.target.value })} className="input" />
+          </label>
+          <label className="block">
+            <span className="label">Max replies + DMs per hour</span>
+            <input type="number" min={1} max={1000} value={draft.max_actions_per_hour} onChange={(e) => setDraft({ ...draft, max_actions_per_hour: e.target.value })} className="input" />
+          </label>
+        </div>
+        <p className="text-xs text-slate-500">
+          Recommended: 20–90 seconds, and at most about 120 actions per hour. Above the hourly limit, replies wait and are sent later. Nothing is lost.
+        </p>
+        <div className="flex items-center gap-3">
+          <button type="submit" disabled={saving || !numbersChanged} className="btn-primary">
+            {saving && <LoaderCircle className="h-4 w-4 animate-spin" />} Save timing
+          </button>
+          {msg && <span className={`text-sm ${msg.ok ? 'text-emerald-700' : 'text-red-600'}`}>{msg.text}</span>}
+        </div>
+      </form>
+    </div>
+  );
+}
+
+// ───────────────────────── System status ─────────────────────────
+
+function SystemTab() {
+  const [status, setStatus] = useState(null);
+  const [error, setError] = useState('');
+  useEffect(() => {
+    const load = () => api.get('/health/status').then(setStatus).catch((e) => setError(e.message));
+    load();
+    const t = setInterval(load, 15_000);
+    return () => clearInterval(t);
+  }, []);
+  if (error) return <p className="text-sm text-red-600">{error}</p>;
+  if (!status) return <LoaderCircle className="h-6 w-6 animate-spin text-brand-500" />;
+  const up = status.uptimeSeconds;
+  const uptime = up > 86400 ? `${Math.floor(up / 86400)}d ${Math.floor((up % 86400) / 3600)}h` : up > 3600 ? `${Math.floor(up / 3600)}h ${Math.floor((up % 3600) / 60)}m` : `${Math.floor(up / 60)}m`;
+  return (
+    <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
+      <section className="card">
+        <h2 className="mb-3 text-base font-semibold text-slate-900">API connections</h2>
+        <SystemStatus status={status} />
+      </section>
+      <div className="space-y-6">
+        <section className="card">
+          <h2 className="mb-3 text-base font-semibold text-slate-900">Background work</h2>
+          <dl className="grid grid-cols-3 gap-2 text-center">
+            <div className="rounded-xl bg-slate-50 p-3"><dt className="text-xs text-slate-500">Waiting</dt><dd className="mt-1 text-lg font-semibold text-slate-900">{status.queue?.pending ?? 0}</dd></div>
+            <div className="rounded-xl bg-slate-50 p-3"><dt className="text-xs text-slate-500">Running</dt><dd className="mt-1 text-lg font-semibold text-slate-900">{status.queue?.running ?? 0}</dd></div>
+            <div className="rounded-xl bg-slate-50 p-3"><dt className="text-xs text-slate-500">Failed (24h)</dt><dd className={`mt-1 text-lg font-semibold ${status.queue?.failedLast24h ? 'text-red-600' : 'text-slate-900'}`}>{status.queue?.failedLast24h ?? 0}</dd></div>
+          </dl>
+          <p className="mt-3 text-xs text-slate-500">
+            Server running for {uptime} · version {status.version} · time zone {status.timeZone}
+          </p>
+        </section>
+        <section className="card">
+          <div className="mb-2 flex items-center justify-between">
+            <h2 className="text-base font-semibold text-slate-900">Error log</h2>
+            <Link to="/logs" className="text-sm font-medium text-brand-600 hover:text-brand-700">All logs →</Link>
+          </div>
+          {status.lastError ? (
+            <p className="rounded-xl bg-red-50 px-3 py-2 text-sm text-red-800">
+              {status.lastError.message}
+              <span className="mt-0.5 block text-xs text-red-600">{new Date(status.lastError.at).toLocaleString()}</span>
+            </p>
+          ) : (
+            <p className="text-sm text-slate-500">No errors recorded. 🎉</p>
+          )}
+        </section>
+      </div>
+    </div>
+  );
+}
+
+// ───────────────────────── Page ─────────────────────────
+
+const TABS = [
+  { value: 'automation', label: 'Automation' },
+  { value: 'instagram', label: 'Instagram & webhooks' },
+  { value: 'system', label: 'System status' },
+];
+
+export default function Settings() {
+  const [params] = useSearchParams();
+  // Coming back from Instagram login (?instagram=…) always lands on the Instagram tab.
+  const [tab, setTab] = useState(() => (params.get('instagram') ? 'instagram' : TABS.some((t) => t.value === params.get('tab')) ? params.get('tab') : 'automation'));
+  return (
+    <div className="space-y-6">
+      <PageHeader title="Settings" subtitle="Automation switches, Instagram connection and system health." />
+      <FilterTabs options={TABS} value={tab} onChange={setTab} />
+      {tab === 'automation' && <AutomationSettings />}
+      {tab === 'instagram' && <InstagramSettings />}
+      {tab === 'system' && <SystemTab />}
     </div>
   );
 }

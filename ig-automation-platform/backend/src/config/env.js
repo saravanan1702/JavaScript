@@ -17,6 +17,8 @@ const schema = z.object({
   APP_BASE_URL: z.url().default('http://localhost:5173'),
   // Where the React dashboard is served from (CORS + post-OAuth redirect).
   FRONTEND_URL: z.url().default('http://localhost:5173'),
+  // Time zone for dashboard charts ("today", daily buckets).
+  APP_TIMEZONE: z.string().default('Asia/Kolkata'),
   // Set to true when running behind Nginx so req.ip / secure cookies work.
   TRUST_PROXY: bool.default('false'),
 

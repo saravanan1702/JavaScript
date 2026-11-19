@@ -17,6 +17,22 @@
   --color-ink-700: #23273f;
 }
 
+/* Chart tokens (validated palette: categorical slots 1–3 pass the CVD + normal-vision gates on white). */
+:root {
+  --chart-series-1: #2a78d6; /* blue: comments */
+  --chart-series-2: #eb6834; /* orange: public replies */
+  --chart-series-3: #1baf7a; /* aqua: DMs (below 3:1 → always direct-labeled + table view) */
+  --chart-seq: #2a78d6; /* single hue for ranked bars */
+  --chart-grid: #e1e0d9;
+  --chart-axis: #c3c2b7;
+  --chart-muted: #898781;
+  --chart-surface: #ffffff;
+  --status-good: #0ca30c;
+  --status-warning: #fab219;
+  --status-critical: #d03b3b;
+  --status-neutral: #b5b3ab;
+}
+
 @layer base {
   body {
     @apply bg-slate-50 font-sans text-slate-800 antialiased;

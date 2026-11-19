@@ -18,7 +18,9 @@
     "gen-secrets": "node scripts/generate-secrets.js",
     "test": "vitest run",
     "test:watch": "vitest",
-    "webhook:simulate": "node scripts/simulate-webhook.js"
+    "webhook:simulate": "node scripts/simulate-webhook.js",
+    "demo:seed": "node scripts/seed-demo.js",
+    "demo:clear": "node scripts/seed-demo.js --clear"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^1.8.0",

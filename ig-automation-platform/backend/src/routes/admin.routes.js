@@ -8,10 +8,17 @@ import { db } from '../db/knex.js';
 import * as webhooks from '../services/webhook.service.js';
 import * as comments from '../services/comment.service.js';
 import { retryFailedActions } from '../services/automation.service.js';
+import { getDashboard } from '../services/dashboard.service.js';
 
 const router = Router();
 // Scoped to these paths so unknown /api URLs still return 404, not 401.
-router.use(['/webhook-events', '/comments', '/logs'], requireAdmin);
+router.use(['/webhook-events', '/comments', '/logs', '/dashboard'], requireAdmin);
+
+router.get(
+  '/dashboard',
+  validate({ query: z.object({ days: z.coerce.number().int().refine((d) => [1, 7, 30, 90].includes(d), 'days must be 1, 7, 30 or 90').default(7) }) }),
+  async (req, res) => res.json(await getDashboard({ days: req.query.days })),
+);
 
 const paging = {
   page: z.coerce.number().int().min(1).default(1),
