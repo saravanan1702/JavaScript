@@ -1,0 +1,205 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Boutique in T. Nagar, Chennai | Sarees, Kurtis, Lehengas | Mayil Boutique</title>
+<meta name="description" content="Mayil Boutique, ladies boutique in T. Nagar, Chennai. Kanchipuram silk sarees, kurtis, bridal lehengas and custom blouse stitching. Send an enquiry on WhatsApp.">
+<meta name="keywords" content="boutique in Chennai, ladies boutique T Nagar, silk sarees Chennai, bridal lehenga Chennai, blouse stitching Chennai, kurtis Chennai">
+<link rel="canonical" href="https://www.example.com/">
+<meta property="og:title" content="Mayil Boutique, T. Nagar Chennai"><meta property="og:description" content="Sarees, kurtis, lehengas and custom blouses in Chennai."><meta property="og:type" content="website">
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"ClothingStore","name":"Mayil Boutique","description":"Ladies boutique in T. Nagar, Chennai","address":{"@type":"PostalAddress","streetAddress":"Add street","addressLocality":"Chennai","addressRegion":"Tamil Nadu","postalCode":"600017","addressCountry":"IN"},"telephone":"+919999999999","openingHours":["Mo-Sa 10:00-21:00","Su 11:00-20:00"],"priceRange":"₹₹","hasMap":"https://www.google.com/maps/search/?api=1&query=boutique+in+T+Nagar+Chennai","url":"https://www.example.com/"}</script>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bodoni+Moda:opsz,wght@6..96,500;6..96,700&family=DM+Sans:wght@400;500;700&display=swap">
+<style>
+/* Layout: sticky slim header, split hero, filterable catalogue grid, enquiry panel beside shop details */
+:root{
+  --bg:#f6f8f7; --surface:#ffffff; --fg:#14201f; --muted:#52615f; --line:#d6dfdc;
+  --brand:#0f4c4a; --brand-ink:#ffffff; --accent:#b3205f; --accent-ink:#ffffff;
+  --ok:#17653a; --err:#a4262c;
+  --display:'Bodoni Moda',Georgia,serif; --body:'DM Sans',system-ui,sans-serif;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#0d1514; --surface:#15201f; --fg:#e8f0ee; --muted:#9db0ad; --line:#2a3a38;
+  --brand:#5cc4bd; --brand-ink:#08201f; --accent:#ff6fa6; --accent-ink:#2a0615; --ok:#6fd49a; --err:#ff8d92; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0d1514; --surface:#15201f; --fg:#e8f0ee; --muted:#9db0ad; --line:#2a3a38;
+  --brand:#5cc4bd; --brand-ink:#08201f; --accent:#ff6fa6; --accent-ink:#2a0615; --ok:#6fd49a; --err:#ff8d92; color-scheme:dark}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--fg);font:16px/1.6 var(--body)}
+.wrap{max-width:1120px;margin-inline:auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+h1,h2,h3{font-family:var(--display);line-height:1.15;text-wrap:balance;margin:0}
+a{color:inherit}
+:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);background:var(--surface);z-index:30}
+header{position:sticky;top:env(safe-area-inset-top,0px);z-index:20;background:var(--surface);border-bottom:1px solid var(--line)}
+header .wrap{display:flex;align-items:center;justify-content:space-between;gap:16px;padding-block:12px;flex-wrap:wrap}
+.logo{font-family:var(--display);font-weight:700;font-size:1.35rem;text-decoration:none;color:var(--brand)}
+nav{display:flex;gap:18px;flex-wrap:wrap;font-weight:500;font-size:.95rem}
+nav a{text-decoration:none;color:var(--muted)} nav a:hover{color:var(--fg)}
+.hero{padding-block:48px 40px}
+.hero .wrap{display:grid;grid-template-columns:1.15fr .85fr;gap:40px;align-items:center}
+.eyebrow{font-size:.78rem;letter-spacing:.14em;text-transform:uppercase;color:var(--accent);font-weight:700}
+.hero h1{font-size:clamp(2.1rem,5vw,3.6rem);margin-block:10px 16px}
+.hero p{color:var(--muted);max-width:52ch;margin:0 0 24px}
+.btn{display:inline-block;border:0;border-radius:6px;padding:12px 22px;font:700 1rem var(--body);cursor:pointer;text-decoration:none;background:var(--brand);color:var(--brand-ink)}
+.btn.alt{background:var(--accent);color:var(--accent-ink)}
+.btn.ghost{background:transparent;color:var(--fg);border:1.5px solid var(--line)}
+.cta-row{display:flex;gap:12px;flex-wrap:wrap}
+.fabric{aspect-ratio:4/5;border-radius:140px 140px 12px 12px;max-width:100%;position:relative;overflow:hidden;background:
+  repeating-linear-gradient(135deg,rgba(255,255,255,.12) 0 6px,transparent 6px 14px),linear-gradient(160deg,var(--brand),var(--accent))}
+.fabric span{position:absolute;left:16px;bottom:14px;background:var(--surface);color:var(--fg);padding:4px 10px;border-radius:4px;font-size:.8rem;font-weight:500}
+section{padding-block:44px}
+section>.wrap>h2{font-size:clamp(1.6rem,3.5vw,2.3rem);margin-bottom:6px}
+.sub{color:var(--muted);margin:0 0 24px}
+.filters{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:24px}
+.chip{border:1.5px solid var(--line);background:var(--surface);color:var(--fg);padding:7px 16px;border-radius:99px;font:500 .9rem var(--body);cursor:pointer}
+.chip[aria-pressed="true"]{background:var(--brand);color:var(--brand-ink);border-color:var(--brand)}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:22px}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:10px;overflow:hidden;display:flex;flex-direction:column;min-width:0}
+.card .img{aspect-ratio:4/5;background-size:cover;background-position:center;display:flex;align-items:flex-end;padding:10px}
+.card .tag{background:var(--surface);color:var(--fg);font-size:.72rem;font-weight:700;padding:3px 8px;border-radius:4px;letter-spacing:.04em}
+.card .body{padding:14px 16px 16px;display:flex;flex-direction:column;gap:6px;flex:1}
+.card h3{font-size:1.1rem}
+.card .d{color:var(--muted);font-size:.88rem;margin:0;flex:1}
+.price{font-weight:700;font-size:1.1rem;font-variant-numeric:tabular-nums}
+.price s{color:var(--muted);font-weight:400;font-size:.88rem;margin-left:6px}
+.card .btn{padding:9px 14px;font-size:.9rem;text-align:center}
+.split{display:grid;grid-template-columns:1fr 1fr;gap:40px}
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:26px}
+label{display:block;font-weight:500;font-size:.9rem;margin-bottom:5px}
+input,select,textarea{width:100%;font:1rem var(--body);padding:11px 12px;border:1.5px solid var(--line);border-radius:6px;background:var(--bg);color:var(--fg)}
+.field{margin-bottom:16px}
+.err{color:var(--err);font-size:.82rem;min-height:1.1em;margin-top:3px}
+.result{margin-top:18px;padding:16px;border-radius:8px;border:1.5px solid var(--ok);color:var(--fg)}
+.result b{color:var(--ok)}
+dl{margin:0;display:grid;gap:14px}
+dt{font-size:.75rem;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);font-weight:700}
+dd{margin:2px 0 0}
+.hours{font-variant-numeric:tabular-nums}
+footer{border-top:1px solid var(--line);padding-block:26px;color:var(--muted);font-size:.88rem}
+footer .wrap{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap}
+@media(max-width:760px){.hero .wrap,.split{grid-template-columns:1fr}.fabric{max-width:320px}}
+@media(prefers-reduced-motion:no-preference){.card{transition:transform .2s}.card:hover{transform:translateY(-3px)}}
+</style>
+
+</head><body>
+<header><div class="wrap">
+  <a class="logo" href="#top">Mayil Boutique</a>
+  <nav aria-label="Main"><a href="#catalogue">Collection</a><a href="#enquiry">Enquiry</a><a href="#visit">Visit us</a></nav>
+</div></header>
+
+<main id="top">
+<div class="hero"><div class="wrap">
+  <div>
+    <div class="eyebrow">Ladies boutique in T. Nagar, Chennai</div>
+    <h1>Sarees, kurtis and lehengas, stitched to your size</h1>
+    <p>Handpicked silks, cottons and festive wear from our T. Nagar boutique. Tailoring and blouse stitching in 5 to 7 days. Send an enquiry and we reply the same day.</p>
+    <div class="cta-row"><a class="btn" href="#catalogue">See collection</a><a class="btn alt" href="#enquiry">Send enquiry</a></div>
+  </div>
+  <div class="fabric" role="img" aria-label="Silk fabric pattern in teal and magenta"><span>Kanchipuram silk, new arrivals</span></div>
+</div></div>
+
+<section id="catalogue"><div class="wrap">
+  <h2>Our collection</h2>
+  <p class="sub">Prices are starting prices. Tap Enquire on any piece and we will confirm colours, size and stock.</p>
+  <div class="filters" id="filters" role="group" aria-label="Filter by category"></div>
+  <div class="grid" id="grid"></div>
+</div></section>
+
+<section id="enquiry" style="background:var(--surface);border-block:1px solid var(--line)"><div class="wrap split">
+  <div>
+    <h2>Send an enquiry</h2>
+    <p class="sub">Tell us what you are looking for. Your enquiry reaches the shop owner directly on WhatsApp and email.</p>
+    <form id="form" novalidate class="panel">
+      <div class="field"><label for="name">Your name</label><input id="name" autocomplete="name"><div class="err" id="e-name"></div></div>
+      <div class="field"><label for="phone">Phone number</label><input id="phone" inputmode="numeric" autocomplete="tel" placeholder="10-digit mobile number"><div class="err" id="e-phone"></div></div>
+      <div class="field"><label for="product">Product (optional)</label><select id="product"></select></div>
+      <div class="field"><label for="msg">What do you need?</label><textarea id="msg" rows="4" placeholder="Occasion, colour, size, budget"></textarea><div class="err" id="e-msg"></div></div>
+      <button class="btn alt" type="submit">Send enquiry</button>
+      <div id="result" class="result" hidden></div>
+    </form>
+  </div>
+  <div id="visit">
+    <h2>Visit the shop</h2>
+    <p class="sub">Walk in any day. Parking available on Usman Road side.</p>
+    <div class="panel"><dl>
+      <div><dt>Address</dt><dd>Add shop address here, T. Nagar, Chennai 600017</dd></div>
+      <div><dt>Hours</dt><dd class="hours">Mon to Sat 10:00 to 21:00<br>Sunday 11:00 to 20:00</dd></div>
+      <div><dt>Phone and WhatsApp</dt><dd id="shopPhone"></dd></div>
+      <div><dt>Email</dt><dd id="shopMail"></dd></div>
+      <div><a class="btn ghost" id="gbp" href="https://www.google.com/maps/search/?api=1&query=boutique+in+T+Nagar+Chennai" target="_blank" rel="noopener">Open in Google Maps</a></div>
+    </dl></div>
+  </div>
+</div></section>
+</main>
+
+<footer><div class="wrap"><span>Mayil Boutique, T. Nagar, Chennai</span><span>Sample catalogue. Replace names, prices and photos with real ones.</span></div></footer>
+
+<script>
+/* ===== SHOP OWNER SETTINGS: edit only this block ===== */
+const SHOP = {
+  name: "Mayil Boutique",
+  whatsapp: "919999999999",          // country code + number, no + or spaces
+  email: "owner@example.com",
+  formEndpoint: "",                  // optional: Formspree/Web3Forms URL to get enquiries by email automatically
+};
+/* Product list. image: leave "" for colour swatch, or put a photo path like "img/saree1.jpg" */
+const PRODUCTS = [
+  {id:1,cat:"Sarees",name:"Kanchipuram Silk Saree",price:8500,was:9800,desc:"Pure silk, zari border, wine and gold. Blouse piece included.",tag:"Bestseller",c:["#7a1530","#d9a441"],image:""},
+  {id:2,cat:"Sarees",name:"Soft Cotton Saree",price:1450,desc:"Daily-wear cotton, handloom feel, 6 colours.",tag:"",c:["#1c6b8a","#e8d9a8"],image:""},
+  {id:3,cat:"Sarees",name:"Banarasi Georgette Saree",price:4200,desc:"Light drape, floral weave, ideal for weddings.",tag:"New",c:["#2e5e3e","#c9a85c"],image:""},
+  {id:4,cat:"Kurtis",name:"Anarkali Cotton Kurti",price:1250,desc:"Flared cut, block print, sizes S to XXL.",tag:"",c:["#b3205f","#f3c6d6"],image:""},
+  {id:5,cat:"Kurtis",name:"Straight Fit Office Kurti",price:899,desc:"Wrinkle-free fabric with three-quarter sleeves.",tag:"",c:["#0f4c4a","#a9d4cf"],image:""},
+  {id:6,cat:"Lehengas",name:"Bridal Silk Lehenga",price:18500,was:21000,desc:"Heavy embroidery, can-can lining, made to measure.",tag:"Made to order",c:["#8c1d2c","#e0b861"],image:""},
+  {id:7,cat:"Lehengas",name:"Half-Saree Set",price:5600,desc:"Pavadai, davani and blouse. For functions and festivals.",tag:"",c:["#5b2a86","#f0c46a"],image:""},
+  {id:8,cat:"Blouses",name:"Custom Designer Blouse",price:750,desc:"Stitched to your size. Maggam work from ₹1,800.",tag:"5 to 7 days",c:["#c0522b","#f4d9b8"],image:""},
+];
+/* ===== end settings ===== */
+
+const inr = n => "₹" + n.toLocaleString("en-IN");
+const $ = id => document.getElementById(id);
+const cats = ["All", ...new Set(PRODUCTS.map(p => p.cat))];
+let current = "All";
+
+function art(p){
+  if (p.image) return `background-image:url('${p.image}')`;
+  return `background:repeating-linear-gradient(135deg,rgba(255,255,255,.14) 0 6px,transparent 6px 14px),linear-gradient(155deg,${p.c[0]},${p.c[1]})`;
+}
+function render(){
+  $("filters").innerHTML = cats.map(c => `<button class="chip" aria-pressed="${c===current}" data-cat="${c}">${c}</button>`).join("");
+  $("grid").innerHTML = PRODUCTS.filter(p => current==="All"||p.cat===current).map(p => `
+    <article class="card">
+      <div class="img" style="${art(p)}" role="img" aria-label="${p.name}">${p.tag?`<span class="tag">${p.tag}</span>`:""}</div>
+      <div class="body"><h3>${p.name}</h3><p class="d">${p.desc}</p>
+        <div class="price">${inr(p.price)}${p.was?`<s>${inr(p.was)}</s>`:""}</div>
+        <button class="btn" data-enq="${p.id}">Enquire</button></div>
+    </article>`).join("");
+}
+$("filters").addEventListener("click", e => { const b=e.target.closest("[data-cat]"); if(b){current=b.dataset.cat;render();} });
+$("grid").addEventListener("click", e => {
+  const b=e.target.closest("[data-enq]"); if(!b) return;
+  $("product").value = b.dataset.enq;
+  $("enquiry").scrollIntoView({behavior:"smooth"}); $("name").focus({preventScroll:true});
+});
+$("product").innerHTML = `<option value="">General enquiry</option>` + PRODUCTS.map(p=>`<option value="${p.id}">${p.name} (${inr(p.price)})</option>`).join("");
+$("shopPhone").textContent = "+" + SHOP.whatsapp.replace(/^(\d{2})(\d{5})(\d{5})$/,"$1 $2 $3");
+$("shopMail").textContent = SHOP.email;
+
+$("form").addEventListener("submit", async e => {
+  e.preventDefault();
+  const name=$("name").value.trim(), phone=$("phone").value.replace(/[\s-]/g,"").replace(/^(\+91|91|0)(?=\d{10}$)/,""), msg=$("msg").value.trim();
+  $("e-name").textContent = name ? "" : "Enter your name.";
+  $("e-phone").textContent = /^[6-9]\d{9}$/.test(phone) ? "" : "Enter a valid 10-digit mobile number.";
+  $("e-msg").textContent = msg ? "" : "Tell us what you need.";
+  if (!name || !/^[6-9]\d{9}$/.test(phone) || !msg) return;
+  const prod = PRODUCTS.find(p => String(p.id)===$("product").value);
+  const text = `New enquiry from website\nName: ${name}\nPhone: ${phone}\n` + (prod?`Product: ${prod.name} (${inr(prod.price)})\n`:"") + `Message: ${msg}`;
+  let mailed = false;
+  if (SHOP.formEndpoint) {
+    try { const r = await fetch(SHOP.formEndpoint,{method:"POST",headers:{"Content-Type":"application/json",Accept:"application/json"},body:JSON.stringify({name,phone,product:prod?prod.name:"",message:msg})}); mailed = r.ok; } catch(_){}
+  }
+  const wa = `https://wa.me/${SHOP.whatsapp}?text=${encodeURIComponent(text)}`;
+  const box = $("result"); box.hidden = false;
+  box.innerHTML = `<b>Enquiry ready, ${name.replace(/</g,"&lt;")}.</b> ${mailed?"It has been emailed to the shop. ":""}Tap below to send it on WhatsApp so the shop sees it instantly.<br><br><a class="btn" href="${wa}" target="_blank" rel="noopener">Send on WhatsApp</a>`;
+});
+render();
+</script>
+
+</body></html>
